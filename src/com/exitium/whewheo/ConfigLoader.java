@@ -1,6 +1,7 @@
 package com.exitium.whewheo;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,18 +22,71 @@ public class ConfigLoader {
 	
 	public ConfigLoader() {
 //		servers = new HashMap<String, ServerTP>();
-//		warps = new HashMap<String, WarpTP>();
+		warps = new HashMap<String, WarpTP>();
 		
 //		loadServer();
+		loadWarps();
 	}
 	
 	public void loadServer() {
 		
 	}
 	
-	public void loadWarps() {
+	public static void loadWarps() {
 		//MAKE SURE TO CHECK IF THE WARP IS ENABLED
 		//ALSO TO MAKE SURE IT HAS ALL THE REQUIREMENTS ANYWAYS
+		
+		Bukkit.broadcastMessage("Loading Warps");
+		
+		if (Main.menuConfig.contains("warps")) {
+			Bukkit.broadcastMessage("Iterating Through Warps");
+			for (String key : Main.menuConfig.getConfigurationSection("warps").getKeys(false)) {
+				Bukkit.broadcastMessage("Current Key: " + key);
+				if (Main.menuConfig.getConfigurationSection("warps." + key).contains("enabled")) {
+					Bukkit.broadcastMessage("Enabled");
+					if (Main.menuConfig.getBoolean("warps." + key + ".enabled")) {
+						
+						if (hasRequirements("warps." + key)) {
+							
+							ConfigurationSection section = Main.menuConfig.getConfigurationSection("warps." + key);
+							
+							if (deserializeLocation(section.getString("location")) == null) {
+								Bukkit.getServer().getLogger().severe("No location set for warp: " + key);
+								continue;
+							}
+							
+							int id = 0;
+							try {
+								id = Integer.parseInt(key);
+							}catch (NumberFormatException e) {
+								Bukkit.getServer().getLogger().severe("Invalid Id! Not an integer! Current ID: " + key);
+								continue;
+							}
+							
+							String name = section.getString("name");
+							String server = section.getString("server");
+							Location location = deserializeLocation(section.getString("location"));
+							int slot = section.getInt("slot");
+							String material = section.getString("material");
+							String enchantment = section.getString("enchantment");
+							int quantity = section.getInt("quantity");
+							List<String> lore = section.getStringList("lore");
+							boolean enableCommands = section.getBoolean("enableCommands");
+							List<String> commands = section.getStringList("commands");
+							
+							WarpTP warp = new WarpTP(id, name, server, location, slot, material, quantity, lore, enableCommands, commands);
+							
+							warps.put(name, warp);
+							
+							Bukkit.getLogger().info("Warp Location Loaded! ID: " + id);
+							Bukkit.broadcastMessage("Warp Location Loaded! ID: " + id);
+						}else{
+							Bukkit.getServer().getLogger().severe("Couldn't load enabled warp " + key + ". Doesn't contain all required fields. Skipping...");
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	public static int getNextServerId() {
@@ -48,9 +102,9 @@ public class ConfigLoader {
 	}
 	
 	public static int getNextWarpId() {
-		if (Main.menuConfig.contains("warp")) {
+		if (Main.menuConfig.contains("warps")) {
 			int nextId = 1;
-			while (Main.menuConfig.getConfigurationSection("warp").contains(nextId + "")) {
+			while (Main.menuConfig.getConfigurationSection("warps").contains(nextId + "")) {
 				nextId++;
 			}
 			return nextId;
@@ -126,20 +180,20 @@ public class ConfigLoader {
 	}
 	
 	/** @param path The path to the number configuration: Ex: "warps.1"*/
-	public static boolean hasRequirments(String path) {
+	public static boolean hasRequirements(String path) {
 		ConfigurationSection s = Main.menuConfig.getConfigurationSection(path);
 		
-		if (s.contains("Name") &&
-				s.contains("Server") &&
-				s.contains("Enabled") &&
-				s.contains("Location") &&
-				s.contains("Slot") &&
-				s.contains("Material") &&
-				s.contains("Enchantment") &&
-				s.contains("Quantity") &&
-				s.contains("Lore") &&
-				s.contains("EnableCommands") &&
-				s.contains("Commands")) {
+		if (s.contains("name") &&
+				s.contains("server") &&
+				s.contains("location") &&
+				s.contains("enabled") &&
+				s.contains("slot") &&
+				s.contains("material") &&
+				s.contains("enchantment") &&
+				s.contains("quantity") &&
+				s.contains("lore") &&
+				s.contains("enableCommands") &&
+				s.contains("commands")) {
 			return true;
 		}else{
 			return false;

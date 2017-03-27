@@ -55,6 +55,16 @@ public class Main extends JavaPlugin{
 		menuConfig = YamlConfiguration.loadConfiguration(menuFile);
 		saveMenuConfig();
 	}
+
+	/** Attempts to save the config. If unsuccessful, it prints an error message.*/
+	public static void saveConfigFile() {
+		try {
+			config.save(configFile);
+		} catch (IOException e) {
+			Bukkit.getServer().getLogger().severe(ChatColor.RED + "Error trying to save config. Contact Developer.");
+			e.printStackTrace();
+		}
+	}
 	
 	/** Attempts to save the menu configuration to the menu file. If unsuccessful, it prints an error message.*/
 	public static void saveMenuConfig() {

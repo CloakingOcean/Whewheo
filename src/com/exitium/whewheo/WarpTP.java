@@ -24,19 +24,7 @@ public class WarpTP {
 	private boolean enableCommands;
 	private List<String> commands;
 	
-	public WarpTP(int id, boolean enabled, String name, String server, Location location, int slot, String material, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
-		this.id = id;
-		this.name = name;
-		this.server = server;
-		this.location = location;
-		this.material = material;
-		this.quantity = quantity;
-		this.lore = lore;
-		this.enableCommands = enableCommands;
-		this.commands = commands;
-	}
-	
-	public WarpTP(int id, String name, String server, Location location, boolean groups, String group, int slot, String material, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
+	public WarpTP(int id, String name, String server, Location location, int slot, String material, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
 		this.id = id;
 		this.name = name;
 		this.server = server;

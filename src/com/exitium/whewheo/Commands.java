@@ -1,5 +1,7 @@
 package com.exitium.whewheo;
 
+import java.util.Arrays;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,10 +30,10 @@ public class Commands implements CommandExecutor{
 				
 				//TODO: Send Help Message
 				return true;
-			}else if (args.length == 1){ 
+			}else if (args.length == 1){
 				//If there is one argument "/ww <arg[0]>"
 				
-				if (args[0].equalsIgnoreCase("create")) { 
+				if (args[0].equalsIgnoreCase("create")) {
 					//If command is "/ww create"
 					
 					sender.sendMessage(ChatColor.RED + "Usage: /ww create <warp>");
@@ -40,8 +42,17 @@ public class Commands implements CommandExecutor{
 					Main.config = YamlConfiguration.loadConfiguration(Main.configFile);
 					Main.menuConfig = YamlConfiguration.loadConfiguration(Main.menuFile);
 					
-					Main.saveMenuConfig();
+					ConfigLoader.loadWarps();
 					sender.sendMessage("Successfully reloaded config");
+				}else if(args[0].equalsIgnoreCase("listwarps")) {
+					if (ConfigLoader.warps != null) {
+						for (WarpTP warp : ConfigLoader.warps.values()) {
+							sender.sendMessage(warp.getId() + ": " + warp.getName() + " at " + warp.getLocation().getWorld().getName() + ":" + warp.getLocation().getX() + ":" + warp.getLocation().getY() + ":" + warp.getLocation().getZ());
+						}
+					}else{
+						sender.sendMessage("No warps are set yet");
+						return true;
+					}
 				}
 			}else if (args.length == 2) {
 				//If there are two arguments "/ww <arg[0]> <arg[1]>"
@@ -60,9 +71,19 @@ public class Commands implements CommandExecutor{
 						
 						int nextIndex = ConfigLoader.getNextWarpId();
 						
-						Main.menuConfig.set("warps." + nextIndex + ".Name", warpName);
-						Main.menuConfig.set("warps." + nextIndex + ".Location", ConfigLoader.serializeLocation(player.getLocation()));
-						Main.menuConfig.set("warps." + nextIndex + ".Enabled", false);
+						Main.menuConfig.set("warps." + nextIndex + ".name", warpName);
+						Main.menuConfig.set("warps." + nextIndex + ".location", ConfigLoader.serializeLocation(player.getLocation()));
+						Main.menuConfig.set("warps." + nextIndex + ".enabled", false);
+						
+						//Create Place Holders
+						Main.menuConfig.set("warps." + nextIndex + ".server", "server");
+						Main.menuConfig.set("warps." + nextIndex + ".slot", 0);
+						Main.menuConfig.set("warps." + nextIndex + ".material", "341:0");
+						Main.menuConfig.set("warps." + nextIndex + ".enchantment", "null");
+						Main.menuConfig.set("warps." + nextIndex + ".quantity", 1);
+						Main.menuConfig.set("warps." + nextIndex + ".lore", Arrays.asList(""));
+						Main.menuConfig.set("warps." + nextIndex + ".enableCommands", true);
+						Main.menuConfig.set("warps." + nextIndex + ".commands", Arrays.asList(""));
 						Main.saveMenuConfig();
 						
 						player.sendMessage("You have successfully added a new warp.");
@@ -85,18 +106,20 @@ public class Commands implements CommandExecutor{
 					
 					if (Main.menuConfig.contains("warps")) {
 						for (String key : Main.menuConfig.getConfigurationSection("warps").getKeys(false)) {
-							if (Main.menuConfig.getConfigurationSection("warps." + key).contains("Name")) {
-								if (Main.menuConfig.getString("warps." + key + ".Name").equals(warpName)) {
-									if (Main.menuConfig.getConfigurationSection("warps." + key).contains("Enabled")) {
-										if (Main.menuConfig.getBoolean("warps." + key + ".Enabled")) {
+							if (Main.menuConfig.getConfigurationSection("warps." + key).contains("name")) {
+								if (Main.menuConfig.getString("warps." + key + ".name").equals(warpName)) {
+									if (Main.menuConfig.getConfigurationSection("warps." + key).contains("enabled")) {
+										if (Main.menuConfig.getBoolean("warps." + key + ".enabled")) {
 											sender.sendMessage("This warp is already enabled!");
 											return true;
 										}else{
 											
-											if (ConfigLoader.hasRequirments("warps." + key)) {
+											if (ConfigLoader.hasRequirements("warps." + key)) {
 												ConfigLoader.addWarp("warps." + key);
-												Main.menuConfig.set("warps." + key + ".Enabled", true);
+												Main.menuConfig.set("warps." + key + ".enabled", true);
 												Main.saveMenuConfig();
+												
+												sender.sendMessage("Enabled Warp");
 											}
 											
 										}
@@ -106,6 +129,24 @@ public class Commands implements CommandExecutor{
 						}
 					}else{
 						sender.sendMessage("No warps have been saved yet");
+						return true;
+					}
+				}else if (args[0].equalsIgnoreCase("teleport") || args[0].equalsIgnoreCase("tp")) {
+					String warpName = args[1];
+					
+					if (ConfigLoader.warps.containsKey(warpName)) {
+						
+						if (sender instanceof Player) {
+							Player player = (Player) sender;
+							
+							player.teleport(ConfigLoader.warps.get(warpName).getLocation());
+						}else{
+							notPlayer(sender);
+							return true;
+						}
+						
+					}else{
+						sender.sendMessage("No warp by the name of: " + warpName);
 						return true;
 					}
 				}
