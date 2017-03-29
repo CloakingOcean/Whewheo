@@ -33,6 +33,7 @@ public class ParticleGenerator implements Runnable{
 		secondsPassed = 0;
 		threadId = 0;
 		this.player = player;
+		
 		this.server = server;
 	}
 	
@@ -70,15 +71,6 @@ public class ParticleGenerator implements Runnable{
 			secondsPassed++;
 		}
 	}
-	
-	
-//	public void sleep(double seconds) {
-//		try {
-//			Thread.sleep((long) (1000 * seconds));
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-//	}
 
 	/**
 	 * @return the threadId

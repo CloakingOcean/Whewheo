@@ -21,9 +21,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-
 import net.md_5.bungee.api.ChatColor;
 
 /**
@@ -101,7 +98,9 @@ public class ServerSelectionHandler implements Listener {
 					}
 				}
 				
-				serverSelectorMeta.setLore(lore);
+				if (!lore.equals(Arrays.asList(""))) {
+					serverSelectorMeta.setLore(lore);
+				}
 				
 				serverSelector.setItemMeta(serverSelectorMeta);
 				
@@ -135,7 +134,10 @@ public class ServerSelectionHandler implements Listener {
 						lore.add(l);
 					}
 				}
-				warpSelectorMeta.setLore(lore);
+				
+				if (!lore.equals(Arrays.asList(""))) {
+					warpSelectorMeta.setLore(lore);
+				}
 				
 				warpSelector.setItemMeta(warpSelectorMeta);
 			}
@@ -176,7 +178,7 @@ public class ServerSelectionHandler implements Listener {
 					
 //					serverItemMeta.setLore(server.getLore());
 					List<String> lore = new ArrayList<String>();
-					for (String l: server.getLore()) {
+					for (String l : server.getLore()) {
 						if (l.contains("&")) {
 							lore.add(ChatColor.translateAlternateColorCodes('&', l));
 						}else{
@@ -240,7 +242,6 @@ public class ServerSelectionHandler implements Listener {
 					 * each server has a config.yml specific to the warps needed.
 					 */
 //					if (warp.getServer().equals(Main.serverName)) { 
-						
 						
 						ItemStack warpItem = ConfigLoader.getItemStackFromId(warp.getMaterial(), warp.getQuantity());
 						ItemMeta warpItemMeta = warpItem.getItemMeta();
@@ -310,27 +311,67 @@ public class ServerSelectionHandler implements Listener {
 		}
 	}
 	
+	/** Runs when a player joins the server
+	 * 	Attempts to give the player a serverSelector. If the desired slot has an item
+	 *  and there is no empty space to put the item, drop the item in the desired slot, and give the player the serverselector
+	 */
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		if (Main.serverName == null) {
-			Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(Main.instance, "BungeeCord");
-			Bukkit.getServer().getMessenger().registerIncomingPluginChannel(Main.instance, "BungeeCord", Main.instance);
+//		if (Main.serverName == null) {
+//			Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(Main.instance, "BungeeCord");
+//			Bukkit.getServer().getMessenger().registerIncomingPluginChannel(Main.instance, "BungeeCord", Main.instance);
+//			
+//			ByteArrayDataOutput out = ByteStreams.newDataOutput();
+//			out.writeUTF("GetServer");
+//			
+//			event.getPlayer().sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
+//		}
+		
+		
+		
+		if (Main.config.contains("serverSelector")) {
 			
-			ByteArrayDataOutput out = ByteStreams.newDataOutput();
-			out.writeUTF("GetServer");
-			
-			event.getPlayer().sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
-		}
-		
-		
-		
-		
-		if (!event.getPlayer().getInventory().contains(serverSelector)) {
-			if (event.getPlayer().getInventory().firstEmpty() != -1) {
-				event.getPlayer().getInventory().addItem(serverSelector);
+			if (Main.config.getConfigurationSection("serverSelector").contains("itemOnJoin") && 
+				Main.config.getConfigurationSection("serverSelector").contains("slot")) {
+				
+				if (Main.config.getBoolean("serverSelector.itemOnJoin")) {
+					//Config Checks
+					
+					
+					if (!event.getPlayer().getInventory().contains(serverSelector)) { //If the player doesn't have the serverSelector Item already
+						
+						
+						Inventory pInv = event.getPlayer().getInventory();
+						int slot = Main.config.getInt("serverSelector.slot");
+						ItemStack itemInSlot = pInv.getItem(slot);
+						
+						
+						if (itemInSlot != null) {
+							if (pInv.firstEmpty() == -1) {
+								//Player's Inventory is Full. Drop the other item.
+								event.getPlayer().getLocation().getWorld().dropItem(event.getPlayer().getLocation(), itemInSlot);
+								
+								pInv.setItem(slot, serverSelector);
+							}else{
+								//Player's Inventory is not Full. Put the item in their inventory in the open slot and put the server selector in the appropriate slot.
+								
+								
+								pInv.setItem(pInv.firstEmpty(), itemInSlot);
+								
+								pInv.setItem(slot, serverSelector);
+							}
+							
+							
+						}else{
+							pInv.setItem(slot, serverSelector);
+						}
+					}
+				}
 			}else{
-				event.getPlayer().sendMessage("Your inventory is too full to recieve the server selector");
+				Bukkit.getServer().getLogger().severe("Couldn't find itemOnJoin or slot options for serverSelector in config!");
 			}
+		}else{
+			Bukkit.getServer().getLogger().severe("Couldn't find serverSelector");
 		}
 	}
 	
@@ -352,32 +393,39 @@ public class ServerSelectionHandler implements Listener {
 			}else if (event.getCurrentItem().equals(serverSelector)) {
 				((Player) event.getWhoClicked()).openInventory(servers);
 			}else if (serverItems.containsValue(event.getCurrentItem())) {
-				Bukkit.broadcastMessage("Found Server Item");
+				
+				ServerTP server = serverItems.get(event.getCurrentItem());
+				if (server.getCommands() != null) {
+					if (server.getCommands().isEmpty() == false) {
+						for (String command : server.getCommands()) {
+							if (!command.equals(""))
+							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+						}
+					}
+				}
 				
 				
+				ParticleGenerator pg = new ParticleGenerator(player, server);
+				int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
+				pg.setThreadId(threadId);
 				
-				new ParticleGenerator(player, serverItems.get(event.getCurrentItem()));
-				
+//				new ParticleGenerator(player, serverItems.get(event.getCurrentItem())); //Yet to be tested
 			}else if (warpItems.containsValue(event.getCurrentItem())) {
 				WarpTP warp = warpItems.get(event.getCurrentItem());
-						
-						//Add Effects Later
-						
-						//Add player to a cooldown waiting map. If they move again, take them away from the map.
-						
-						
-						if (teleportingPlayers.contains(player.getUniqueId().toString())) {
-							teleportingPlayers.remove(player.getUniqueId().toString());
+				if (warp.getCommands() != null) {
+					if (warp.getCommands().isEmpty() == false) {
+						for (String command : warp.getCommands()) {
+							if (!command.equals(""))
+							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
 						}
-						
-						
-						teleportingPlayers.add(player.getUniqueId().toString());
-						
-						
-						//TODO: Handle Delays to make it work right
-						ParticleGenerator pg = new ParticleGenerator(player, warp);
-						int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
-						pg.setThreadId(threadId);
+					}
+				}
+				
+				
+				//TODO: Handle Delays to make it work right
+				ParticleGenerator pg = new ParticleGenerator(player, warp);
+				int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
+				pg.setThreadId(threadId);
 			}
 		}
 	}

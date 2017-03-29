@@ -123,7 +123,6 @@ public class ConfigLoader {
 							Bukkit.getServer().getLogger().info("Path: " + path);
 							
 							String name = ConfigLoader.getColoredTextFromMenu(path);
-							String server = section.getString("server");
 							Location location = deserializeLocation(section.getString("location"));
 							int slot = section.getInt("slot");
 							String material = section.getString("material");
@@ -144,7 +143,7 @@ public class ConfigLoader {
 								realEnchantment = Enchantment.getByName(enchantment);
 							}
 							
-							WarpTP warp = new WarpTP(id, name, server, location, slot, material, realEnchantment, quantity, lore, enableCommands, commands);
+							WarpTP warp = new WarpTP(id, name, location, slot, material, realEnchantment, quantity, lore, enableCommands, commands);
 							
 							warps.put(name, warp);
 							
@@ -254,7 +253,6 @@ public class ConfigLoader {
 		ConfigurationSection s = Main.menuConfig.getConfigurationSection(path);
 		
 		if (s.contains("name") &&
-				s.contains("server") &&
 				s.contains("location") &&
 				s.contains("enabled") &&
 				s.contains("slot") &&

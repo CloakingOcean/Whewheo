@@ -16,7 +16,6 @@ public class WarpTP {
 
 	private int id;
 	private String name;
-	private String server;
 	private Location location;
 	private int slot;
 	private String material;
@@ -26,10 +25,9 @@ public class WarpTP {
 	private boolean enableCommands;
 	private List<String> commands;
 	
-	public WarpTP(int id, String name, String server, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
+	public WarpTP(int id, String name, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
 		this.id = id;
 		this.name = name;
-		this.server = server;
 		this.location = location;
 		this.slot = slot;
 		this.material = material;
@@ -66,20 +64,6 @@ public class WarpTP {
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-	
-	/**
-	 * @return the server
-	 */
-	public String getServer() {
-		return server;
-	}
-	
-	/**
-	 * @param server the server to set
-	 */
-	public void setServer(String server) {
-		this.server = server;
 	}
 	
 	/**

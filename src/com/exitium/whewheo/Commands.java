@@ -89,7 +89,6 @@ public class Commands implements CommandExecutor{
 						Main.menuConfig.set("warps." + nextIndex + ".enabled", false);
 						
 						//Create Place Holders
-						Main.menuConfig.set("warps." + nextIndex + ".server", "server");
 						Main.menuConfig.set("warps." + nextIndex + ".slot", 0);
 						Main.menuConfig.set("warps." + nextIndex + ".material", "341:0");
 						Main.menuConfig.set("warps." + nextIndex + ".enchantment", "null");
