@@ -2,6 +2,7 @@ package com.exitium.whewheo;
 
 import java.util.Arrays;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -41,8 +42,11 @@ public class Commands implements CommandExecutor{
 				}else if(args[0].equalsIgnoreCase("reload")) {
 					Main.config = YamlConfiguration.loadConfiguration(Main.configFile);
 					Main.menuConfig = YamlConfiguration.loadConfiguration(Main.menuFile);
+					Main.saveConfigFile();
+					Main.saveMenuConfig();
 					
-					ConfigLoader.loadWarps();
+					ConfigLoader.init();
+					ServerSelectionHandler.init();
 					sender.sendMessage("Successfully reloaded config");
 				}else if(args[0].equalsIgnoreCase("listwarps")) {
 					if (ConfigLoader.warps != null) {
@@ -53,7 +57,16 @@ public class Commands implements CommandExecutor{
 						sender.sendMessage("No warps are set yet");
 						return true;
 					}
+				}else if(args[0].equalsIgnoreCase("listservers")) {
+					if (ConfigLoader.servers != null) {
+						for (ServerTP server : ConfigLoader.servers.values()) {
+							sender.sendMessage(server.getId() +  ": " + server.getName() + ".");
+						}
+					}
+				}else if(args[0].equalsIgnoreCase("getserver")) {
+					sender.sendMessage(Bukkit.getServerName());
 				}
+						
 			}else if (args.length == 2) {
 				//If there are two arguments "/ww <arg[0]> <arg[1]>"
 				
@@ -114,7 +127,7 @@ public class Commands implements CommandExecutor{
 											return true;
 										}else{
 											
-											if (ConfigLoader.hasRequirements("warps." + key)) {
+											if (ConfigLoader.warpHasRequirements("warps." + key)) {
 												ConfigLoader.addWarp("warps." + key);
 												Main.menuConfig.set("warps." + key + ".enabled", true);
 												Main.saveMenuConfig();
@@ -139,7 +152,7 @@ public class Commands implements CommandExecutor{
 						if (sender instanceof Player) {
 							Player player = (Player) sender;
 							
-							player.teleport(ConfigLoader.warps.get(warpName).getLocation());
+							Main.centeredTP(player, ConfigLoader.warps.get(warpName).getLocation());
 						}else{
 							notPlayer(sender);
 							return true;
@@ -148,6 +161,15 @@ public class Commands implements CommandExecutor{
 					}else{
 						sender.sendMessage("No warp by the name of: " + warpName);
 						return true;
+					}
+				}else if (args[0].equalsIgnoreCase("send")) {
+					String serverName = args[1];
+					
+					if (sender instanceof Player) {
+						Player player = (Player) sender;
+						Main.sendToSever(player, serverName);
+					}else{
+						sender.sendMessage("You must be a player to perform this command.");
 					}
 				}
 			}

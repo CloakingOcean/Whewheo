@@ -2,6 +2,8 @@ package com.exitium.whewheo;
 
 import java.util.List;
 
+import org.bukkit.enchantments.Enchantment;
+
 /**
  * Wrapper class for server teleport information.
  * 
@@ -13,33 +15,20 @@ public class ServerTP {
 
 	private int id;
 	private String name;
-	private boolean groups;
-	private String group;
 	private int slot;
 	private String material;
+	private Enchantment enchantment;
 	private int quantity;
 	private List<String> lore;
 	private boolean enableCommands;
 	private List<String> commands;
 	
-	public ServerTP(int id, String name, int slot, String material, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
+	public ServerTP(int id, String name, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
 		this.id = id;
 		this.name = name;
-		this.groups = false;
-		this.group = "";
+		this.slot = slot;
 		this.material = material;
-		this.quantity = quantity;
-		this.lore = lore;
-		this.enableCommands = enableCommands;
-		this.commands = commands;
-	}
-	
-	public ServerTP(int id, String name, boolean groups, String group, int slot, String material, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
-		this.id = id;
-		this.name = name;
-		this.groups = groups;
-		this.group = group;
-		this.material = material;
+		this.enchantment = enchantment;
 		this.quantity = quantity;
 		this.lore = lore;
 		this.enableCommands = enableCommands;
@@ -72,34 +61,6 @@ public class ServerTP {
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-	
-	/**
-	 * @return the groups
-	 */
-	public boolean isGroups() {
-		return groups;
-	}
-	
-	/**
-	 * @param groups the groups to set
-	 */
-	public void setGroups(boolean groups) {
-		this.groups = groups;
-	}
-
-	/**
-	 * @return the group
-	 */
-	public String getGroup() {
-		return group;
-	}
-
-	/**
-	 * @param group the group to set
-	 */
-	public void setGroup(String group) {
-		this.group = group;
 	}
 
 	/**
@@ -184,6 +145,20 @@ public class ServerTP {
 	 */
 	public void setCommands(List<String> commands) {
 		this.commands = commands;
+	}
+
+	/**
+	 * @return the enchantment
+	 */
+	public Enchantment getEnchantment() {
+		return enchantment;
+	}
+
+	/**
+	 * @param enchantment the enchantment to set
+	 */
+	public void setEnchantment(Enchantment enchantment) {
+		this.enchantment = enchantment;
 	}
 	
 }

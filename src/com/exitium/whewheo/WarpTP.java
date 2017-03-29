@@ -3,6 +3,7 @@ package com.exitium.whewheo;
 import java.util.List;
 
 import org.bukkit.Location;
+import org.bukkit.enchantments.Enchantment;
 
 /**
  * Wrapper class for warp teleport information.
@@ -19,17 +20,20 @@ public class WarpTP {
 	private Location location;
 	private int slot;
 	private String material;
+	private Enchantment enchantment;
 	private int quantity;
 	private List<String> lore;
 	private boolean enableCommands;
 	private List<String> commands;
 	
-	public WarpTP(int id, String name, String server, Location location, int slot, String material, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
+	public WarpTP(int id, String name, String server, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
 		this.id = id;
 		this.name = name;
 		this.server = server;
 		this.location = location;
+		this.slot = slot;
 		this.material = material;
+		this.enchantment = enchantment;
 		this.quantity = quantity;
 		this.lore = lore;
 		this.enableCommands = enableCommands;
@@ -174,6 +178,20 @@ public class WarpTP {
 	 */
 	public void setCommands(List<String> commands) {
 		this.commands = commands;
+	}
+
+	/**
+	 * @return the enchantment
+	 */
+	public Enchantment getEnchantment() {
+		return enchantment;
+	}
+
+	/**
+	 * @param enchantment the enchantment to set
+	 */
+	public void setEnchantment(Enchantment enchantment) {
+		this.enchantment = enchantment;
 	}
 	
 }

@@ -4,9 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * Loads information from the config and menu configs into local lists.
@@ -21,18 +24,70 @@ public class ConfigLoader {
 	public static HashMap<String, WarpTP> warps;
 	
 	public ConfigLoader() {
-//		servers = new HashMap<String, ServerTP>();
+		init();
+	}
+	
+	public static void init() {
+		servers = new HashMap<String, ServerTP>();
 		warps = new HashMap<String, WarpTP>();
 		
-//		loadServer();
+		loadServers();
 		loadWarps();
 	}
 	
-	public void loadServer() {
-		
+	private static void loadServers() {
+		Bukkit.broadcastMessage("Loading Servers"); 
+		if (Main.menuConfig.contains("servers")) {
+			
+			for (String key : Main.menuConfig.getConfigurationSection("servers").getKeys(false)) {
+				if (serverHasRequirements("servers." + key)) {
+					
+					ConfigurationSection section = Main.menuConfig.getConfigurationSection("servers." + key);
+					
+					String name = ConfigLoader.getColoredTextFromMenu("servers." + key + ".name");
+					int slot = section.getInt("slot");
+					Bukkit.getServer().getLogger().info("Slot: " + slot);
+					String material = section.getString("material");
+					String enchantment = section.getString("enchantment");
+					int quantity = section.getInt("quantity");
+					List<String> lore = section.getStringList("lore");
+					boolean enableCommands = section.getBoolean("enableCommands");
+					List<String> commands = section.getStringList("commands");
+					
+					int id = 0;
+					
+					try {
+						id = Integer.parseInt(key);
+					}catch(NumberFormatException e) {
+						Bukkit.getServer().getLogger().severe("Invalid id: " + key + ". Skipping..");
+						continue;
+					}
+					
+					Enchantment realEnchantment = null;
+					
+					if (enchantment.equals("null")) {
+						realEnchantment = null;
+					}else if (Enchantment.getByName(enchantment) == null) {
+						Bukkit.getServer().getLogger().severe("No enchantment by the name of: " + enchantment + "!");
+						continue;
+					}else{
+						realEnchantment = Enchantment.getByName(enchantment);
+					}
+					
+					ServerTP server = new ServerTP(id, name, slot, material, realEnchantment, quantity, lore, enableCommands, commands);
+					
+					servers.put(name, server);
+					Bukkit.getServer().getLogger().info("Successfully loaded: " + id + ". Name: " + name);
+					
+				}else{
+					Bukkit.getServer().getLogger().severe("Couldn't load server " + key + ". Doesn't contain all required fields. Skipping...");
+				}
+			}
+			
+		}
 	}
 	
-	public static void loadWarps() {
+	private static void loadWarps() {
 		//MAKE SURE TO CHECK IF THE WARP IS ENABLED
 		//ALSO TO MAKE SURE IT HAS ALL THE REQUIREMENTS ANYWAYS
 		
@@ -46,7 +101,7 @@ public class ConfigLoader {
 					Bukkit.broadcastMessage("Enabled");
 					if (Main.menuConfig.getBoolean("warps." + key + ".enabled")) {
 						
-						if (hasRequirements("warps." + key)) {
+						if (warpHasRequirements("warps." + key)) {
 							
 							ConfigurationSection section = Main.menuConfig.getConfigurationSection("warps." + key);
 							
@@ -63,7 +118,11 @@ public class ConfigLoader {
 								continue;
 							}
 							
-							String name = section.getString("name");
+							String path = "warps." + key + ".name";
+							
+							Bukkit.getServer().getLogger().info("Path: " + path);
+							
+							String name = ConfigLoader.getColoredTextFromMenu(path);
 							String server = section.getString("server");
 							Location location = deserializeLocation(section.getString("location"));
 							int slot = section.getInt("slot");
@@ -74,7 +133,18 @@ public class ConfigLoader {
 							boolean enableCommands = section.getBoolean("enableCommands");
 							List<String> commands = section.getStringList("commands");
 							
-							WarpTP warp = new WarpTP(id, name, server, location, slot, material, quantity, lore, enableCommands, commands);
+							Enchantment realEnchantment;
+							
+							if (enchantment.equals("null")) {
+								realEnchantment = null;
+							}else if (Enchantment.getByName(enchantment) == null) {
+								Bukkit.getServer().getLogger().severe("No enchantment by the name of: " + enchantment + "!");
+								continue;
+							}else{
+								realEnchantment = Enchantment.getByName(enchantment);
+							}
+							
+							WarpTP warp = new WarpTP(id, name, server, location, slot, material, realEnchantment, quantity, lore, enableCommands, commands);
 							
 							warps.put(name, warp);
 							
@@ -180,7 +250,7 @@ public class ConfigLoader {
 	}
 	
 	/** @param path The path to the number configuration: Ex: "warps.1"*/
-	public static boolean hasRequirements(String path) {
+	public static boolean warpHasRequirements(String path) {
 		ConfigurationSection s = Main.menuConfig.getConfigurationSection(path);
 		
 		if (s.contains("name") &&
@@ -201,7 +271,91 @@ public class ConfigLoader {
 	}
 	
 	/** @param path The path to the number configuration: Ex: "warps.1"*/
+	public static boolean serverHasRequirements(String path) {
+		ConfigurationSection s = Main.menuConfig.getConfigurationSection(path);
+		
+		if (s.contains("name") &&
+				s.contains("slot") &&
+				s.contains("material") &&
+				s.contains("enchantment") &&
+				s.contains("quantity") &&
+				s.contains("lore") &&
+				s.contains("enableCommands") &&
+				s.contains("commands")) {
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	/** @param path The path to the number configuration: Ex: "warps.1"*/
 	public static void addWarp(String path) {
+		
+	}
+	
+	/**
+	 * Returns a string translated with color codes for the specified option
+	 * 
+	 * @param path Configuration Path for wanted Option
+	 * @return Specified Option with ChatColors
+	 */
+	public static String getColoredTextFromConfig(String path) {
+		if (path != null) {
+			if (Main.config.getString(path).contains("&")) {
+				return ChatColor.translateAlternateColorCodes('&', Main.config.getString(path));
+			}else{
+				return Main.config.getString(path);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns a string translated with color codes for the specified option
+	 * 
+	 * @param path Configuration Path for wanted Option
+	 * @return Specified Option with ChatColors
+	 */
+	public static String getColoredTextFromMenu(String path) {
+		if (path != null) {
+			if (Main.menuConfig.getString(path).contains("&")) {
+				return ChatColor.translateAlternateColorCodes('&', Main.menuConfig.getString(path));
+			}else{
+				return Main.menuConfig.getString(path);
+			}
+		}
+		return null;
+	}
+	
+	public static ItemStack getItemStackFromId(String materialAndId, int quantity) {
+		int materialId = 0;
+		int data = 0;
+		if (materialAndId.contains(":")) {
+			String[] splitter = materialAndId.split(":");
+			try {
+				materialId = Integer.parseInt(splitter[0]);
+				data = Integer.parseInt(splitter[1]);
+			}catch(NumberFormatException e) {
+				return null;
+			}
+			
+			@SuppressWarnings("deprecation")
+			ItemStack item = new ItemStack(materialId, quantity, (short) data);
+			
+			return item;
+		}else{
+			try {
+				materialId = Integer.parseInt(materialAndId);
+			}catch (NumberFormatException e) {
+				return null;
+			}
+			
+			@SuppressWarnings("deprecation")
+			ItemStack item = new ItemStack(materialId, quantity);
+			
+			return item;
+		}
+		
 		
 	}
 }

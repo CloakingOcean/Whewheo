@@ -1,0 +1,26 @@
+serverSelector:
+  itemOnJoin: true
+  name: '&b&lServer Selector'
+  material: '345:0'
+  slot: 0
+  enchantment: 'null'
+  quantity: 1
+  lore:
+  - 'Click to Select A Server!'
+  rightClick: true
+  leftClick: true
+warpSelector:
+  name: '&b&lWarp Selector'
+  material: '345:0'
+  enchantment: 'null'
+  quantity: 1
+  lore:
+  - 'Click to Select A Warp!'
+serverMenu:
+  name: '&8&lServer Selector'
+  size: 45
+warpMenu:
+  name: '&8&lWarp Selector'
+  size: 45
+general:
+  teleportDelay: 3
