@@ -51,8 +51,8 @@ public class ServerSelectionHandler implements Listener {
 		
 		
 	// Links the itemstack to the server name
-	private static HashMap<ServerTP, ItemStack> serverItems;
-	private static HashMap<WarpTP, ItemStack> warpItems;
+	private static HashMap<ItemStack, ServerTP> serverItems;
+	private static HashMap<ItemStack, WarpTP> warpItems;
 	
 	
 	public static List<String> teleportingPlayers;
@@ -66,8 +66,8 @@ public class ServerSelectionHandler implements Listener {
 	}
 	
 	public static void init() {
-		serverItems = new HashMap<ServerTP, ItemStack>();
-		warpItems = new HashMap<WarpTP, ItemStack>();
+		serverItems = new HashMap<ItemStack, ServerTP>();
+		warpItems = new HashMap<ItemStack, WarpTP>();
 		
 		teleportingPlayers = new ArrayList<String>();
 		
@@ -194,7 +194,7 @@ public class ServerSelectionHandler implements Listener {
 					
 					
 					
-					serverItems.put(server, serverItem);
+					serverItems.put(serverItem, server);
 					
 					
 					
@@ -268,7 +268,7 @@ public class ServerSelectionHandler implements Listener {
 						warpItem.setItemMeta(warpItemMeta);
 						
 						
-						warpItems.put(warp, warpItem);
+						warpItems.put(warpItem, warp);
 						
 						
 						if (warps.getItem(warp.getSlot()) != null) {
@@ -348,25 +348,18 @@ public class ServerSelectionHandler implements Listener {
 			
 			event.setCancelled(true);
 			if (event.getCurrentItem().equals(warpSelector)) {
-				
-				
-				
-				
-				
-				
-				
-				
-				
 				((Player) event.getWhoClicked()).openInventory(warps);
 			}else if (event.getCurrentItem().equals(serverSelector)) {
 				((Player) event.getWhoClicked()).openInventory(servers);
 			}else if (serverItems.containsValue(event.getCurrentItem())) {
 				Bukkit.broadcastMessage("Found Server Item");
+				
+				
+				
+				new ParticleGenerator(player, serverItems.get(event.getCurrentItem()));
+				
 			}else if (warpItems.containsValue(event.getCurrentItem())) {
-				for (WarpTP warp : warpItems.keySet()) {
-					if (warpItems.get(warp).equals(event.getCurrentItem())) {
-						//Found Warp
-						
+				WarpTP warp = warpItems.get(event.getCurrentItem());
 						
 						//Add Effects Later
 						
@@ -385,8 +378,6 @@ public class ServerSelectionHandler implements Listener {
 						ParticleGenerator pg = new ParticleGenerator(player, warp);
 						int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
 						pg.setThreadId(threadId);
-					}
-				}
 			}
 		}
 	}

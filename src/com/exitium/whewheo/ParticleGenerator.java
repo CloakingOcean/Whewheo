@@ -16,6 +16,8 @@ public class ParticleGenerator implements Runnable{
 	private Player player;
 	private WarpTP warp;
 	
+	private ServerTP server;
+	
 	private int threadId;
 	
 	private int secondsPassed;
@@ -25,6 +27,13 @@ public class ParticleGenerator implements Runnable{
 		threadId = 0;
 		this.player = player;
 		this.warp = warp;
+	}
+	
+	public ParticleGenerator(Player player, ServerTP server) {
+		secondsPassed = 0;
+		threadId = 0;
+		this.player = player;
+		this.server = server;
 	}
 	
 	@Override
@@ -44,8 +53,13 @@ public class ParticleGenerator implements Runnable{
 					Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Main.instance, new Runnable() {
 						@Override
 						public void run() {
-							Main.centeredTP(player, warp.getLocation());
-							ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+							if (warp != null) {
+								Main.centeredTP(player, warp.getLocation());
+								ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+							}else if (server != null) {
+								Main.sendToSever(player, server.getName());
+								ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+							}
 						}
 					});
 				}
