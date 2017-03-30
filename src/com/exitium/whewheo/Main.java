@@ -125,29 +125,41 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		
 	}
 	
+	/** Teleports a player to the center of a target location.*/
 	public static void centeredTP(Player player, Location loc) {
-		Location reference = new Location(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ());
-		reference.setPitch(player.getLocation().getPitch());
-		reference.setYaw(player.getLocation().getYaw());
-		player.teleport(reference.add(0.5, 0.0, 0.5));
+		
+		//Maintains where the player is looking.
+		loc.setPitch(player.getLocation().getPitch());
+		loc.setYaw(player.getLocation().getYaw());
+		
+		//By default, a teleport sends a player to the 0.0, 0.0 corner of a block, so we add half a block (0.5) on each side to center it.
+		loc = loc.add(0.5, 0.0, 0.5);
+		
+		//Teleports the player
+		player.teleport(loc);
 	}
 	
+	/** Attempts to send the player to the target server. Prints a stack trace if unsuccessful.*/
 	public static void sendToSever(Player player, String targetServer) {
+		
+		//Prepare Output Stream
 		ByteArrayOutputStream b = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(b);
+		
+		//Attempts to send the request to Bungeecord's proxy.
 		try {
 			out.writeUTF("Connect");
 			out.writeUTF(targetServer);
 		}catch(Exception e) {
+			//If unsuccessful, prints a stack trace.
 			e.printStackTrace();
 		}
 		
+		//Sends the targetPlayer the plugin message.
 		player.sendPluginMessage(instance, "BungeeCord", b.toByteArray());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.bukkit.plugin.messaging.PluginMessageListener#onPluginMessageReceived(java.lang.String, org.bukkit.entity.Player, byte[])
-	 */
+	/** */
 	@Override
 	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
 		Bukkit.broadcastMessage("RECIEVED INFORMATION!");
