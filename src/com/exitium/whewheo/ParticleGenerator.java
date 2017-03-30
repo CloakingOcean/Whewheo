@@ -1,7 +1,7 @@
 package com.exitium.whewheo;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Effect;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 
 /**
@@ -33,7 +33,6 @@ public class ParticleGenerator implements Runnable{
 		secondsPassed = 0;
 		threadId = 0;
 		this.player = player;
-		
 		this.server = server;
 	}
 	
@@ -43,32 +42,62 @@ public class ParticleGenerator implements Runnable{
 		if (threadId != 0) {
 			Bukkit.getServer().broadcastMessage("Thread Id Set!");
 			int delay = Main.config.getInt("general.teleportDelay");
-			if (ServerSelectionHandler.teleportingPlayers.contains(player.getUniqueId().toString())) {
-				
-				player.getLocation().getWorld().playEffect(player.getLocation(), Effect.ENDER_SIGNAL, 10);
-				
-				if (secondsPassed < delay) {
-					player.sendMessage("Teleportion will commence in " + (delay-secondsPassed));
-				}else{
+			if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null ) {
+				if (ServerSelectionHandler.teleportingPlayers.contains(player.getUniqueId().toString())) {
 					
-					Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Main.instance, new Runnable() {
-						@Override
-						public void run() {
-							if (warp != null) {
-								Main.centeredTP(player, warp.getLocation());
-								ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-							}else if (server != null) {
-								Main.sendToSever(player, server.getName());
-								ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+					
+					double x = player.getLocation().getX();
+					double y = player.getLocation().getY() + 2;
+					double z = player.getLocation().getZ();
+					
+					int count = 50;
+					
+					player.getLocation().getWorld().spawnParticle(Particle.FLAME, player.getLocation(), count);
+					
+//					player.getLocation().getWorld().spawnParticle(Particle.BLOCK_DUST, x, y, z, count, 1.0, 0.0, 0.0);
+//					player.getLocation().getWorld().spawnParticle(Particle.BLOCK_DUST, x, y, z, count, -1.0, 0.0, 0.0);
+//					player.getLocation().getWorld().spawnParticle(Particle.BLOCK_DUST, x, y, z, count, 1.0, 0.0, 1.0);
+//					player.getLocation().getWorld().spawnParticle(Particle.BLOCK_DUST, x, y, z, count, -1.0, 0.0, -1.0);
+//					player.getLocation().getWorld().spawnParticle(Particle.BLOCK_DUST, x, y, z, count, 1.0, 0.0, -1.0);
+//					player.getLocation().getWorld().spawnParticle(Particle.BLOCK_DUST, x, y, z, count, -1.0, 0.0, 1.0);
+					
+					
+					
+					
+					
+					
+					if (secondsPassed < delay) {
+						player.sendMessage("Teleportion will commence in " + (delay-secondsPassed));
+					}else{
+						
+						Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Main.instance, new Runnable() {
+							@Override
+							public void run() {
+								if (warp != null) {
+									Main.centeredTP(player, warp.getLocation());
+									ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+								}
+								if (server != null) {
+									Bukkit.broadcastMessage("Server Name: " + server.getName());
+									
+									//Add check for if player is online
+									
+									ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+									Main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), server.getServer());
+								}
 							}
-						}
-					});
+						});
+					}
+				}else{
+					Bukkit.getServer().broadcastMessage("Cancelled task because is no longer a teleporting Player");
+					Bukkit.getScheduler().cancelTask(threadId);
 				}
+				
+				secondsPassed++;
 			}else{
+				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
 				Bukkit.getScheduler().cancelTask(threadId);
 			}
-			
-			secondsPassed++;
 		}
 	}
 

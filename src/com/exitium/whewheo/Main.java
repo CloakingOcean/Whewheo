@@ -4,12 +4,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
@@ -49,6 +54,7 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		//Initiates the config variables and copies the file if no exist.
 		initiateConfigFiles();
 		
+		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 		//Instantiates a new Config Loader to store information from the config
 		ConfigLoader loader = new ConfigLoader();
 		
@@ -58,6 +64,18 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		getCommand("ww").setExecutor(new Commands());
 		
 		
+
+		Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(Main.instance, "BungeeCord");
+		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(Main.instance, "BungeeCord", Main.instance);
+		
+		
+		if (Bukkit.getServer().getOnlinePlayers().size() > 0) {
+			
+			ByteArrayDataOutput out = ByteStreams.newDataOutput();
+			out.writeUTF("GetServer");
+			
+			Bukkit.getServer().getOnlinePlayers().iterator().next().sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
+		}
 	}
 	
 	/** Initiates the config variables and copies the file if no exist.*/
@@ -126,6 +144,7 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 	 */
 	@Override
 	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
+		Bukkit.broadcastMessage("RECIEVED INFORMATION!");
 		// TODO Auto-generated method stub
 		if (!channel.equals("BungeeCord")) {
 			return;
@@ -134,8 +153,62 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		ByteArrayDataInput in = ByteStreams.newDataInput(message);
 		String subchannel = in.readUTF();
 		if (subchannel.equals("GetServer")) {
+			Bukkit.getServer().getLogger().info("Got Name");
 			String servername = in.readUTF();
 			
+			serverName = servername;
+		} else if (subchannel.equals("PlayerCount")) {
+			Bukkit.getServer().broadcastMessage("Got Player Count");
+			
+			String serverName = in.readUTF(); // Name of server, as given in the arguments
+			int playerCount = in.readInt();
+	
+			Bukkit.broadcastMessage("ServerName: " + serverName);
+			Bukkit.broadcastMessage("PlayerCount: " + playerCount);
+			
+			ServerTP server = ServerSelectionHandler.getServerFromName(serverName);
+			
+			ItemStack serverItem = ServerSelectionHandler.getServerItemFromName(serverName);
+//			
+			ItemMeta serverItemMeta = serverItem.getItemMeta();
+			if (server.getName().contains("&")) {
+				serverItemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', server.getName()));
+			}else{
+				serverItemMeta.setDisplayName(server.getName());
+			}
+			
+//			TODO: Implement Place Holders: %count%
+			
+			serverItemMeta.setLore(server.getLore());
+			List<String> lore = new ArrayList<String>();
+			for (String l : serverItemMeta.getLore()) {
+				if (l.contains("&")) {
+					lore.add(ChatColor.translateAlternateColorCodes('&', l).replace("%count%", playerCount + ""));
+					Bukkit.broadcastMessage("Changed to" + ChatColor.translateAlternateColorCodes('&', l).replace("%count%", playerCount + ""));
+				}else{
+					lore.add(l.replace("%count%", playerCount + ""));
+					Bukkit.broadcastMessage("Changed to "  + l.replace("%count%", playerCount + ""));
+				}
+			}
+//			
+//			serverItemMeta.setLore(lore);
+//			
+//			
+//			
+//			
+			if (!lore.equals(Arrays.asList(""))) {
+				serverItemMeta.setLore(lore);
+			}
+//			
+			if (server.getEnchantment() != null)
+			serverItemMeta.addEnchant(server.getEnchantment(), 1, false);
+			serverItem.setItemMeta(serverItemMeta);
+			
+			
+			
+			ServerSelectionHandler.serverItems.put(serverItem, server);
+			
+			ServerSelectionHandler.servers.setItem(server.getSlot(), serverItem);
 			
 		}
 	}

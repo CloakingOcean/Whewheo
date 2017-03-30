@@ -21,6 +21,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+
 import net.md_5.bungee.api.ChatColor;
 
 /**
@@ -35,7 +38,7 @@ public class ServerSelectionHandler implements Listener {
 
 	private static ItemStack bluePanel;
 	
-	private static Inventory servers;
+	public static Inventory servers;
 	//Items
 		private static ItemStack warpSelector;
 	
@@ -48,7 +51,7 @@ public class ServerSelectionHandler implements Listener {
 		
 		
 	// Links the itemstack to the server name
-	private static HashMap<ItemStack, ServerTP> serverItems;
+	public static HashMap<ItemStack, ServerTP> serverItems;
 	private static HashMap<ItemStack, WarpTP> warpItems;
 	
 	
@@ -175,6 +178,8 @@ public class ServerSelectionHandler implements Listener {
 					}else{
 						serverItemMeta.setDisplayName(server.getName());
 					}
+					
+					//TODO: Implement Place Holders: %count%
 					
 //					serverItemMeta.setLore(server.getLore());
 					List<String> lore = new ArrayList<String>();
@@ -317,15 +322,15 @@ public class ServerSelectionHandler implements Listener {
 	 */
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-//		if (Main.serverName == null) {
-//			Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(Main.instance, "BungeeCord");
-//			Bukkit.getServer().getMessenger().registerIncomingPluginChannel(Main.instance, "BungeeCord", Main.instance);
-//			
-//			ByteArrayDataOutput out = ByteStreams.newDataOutput();
-//			out.writeUTF("GetServer");
-//			
-//			event.getPlayer().sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
-//		}
+		
+		Bukkit.getServer().getLogger().info("PLAYER JOIN EVENT");
+		
+		if (Main.serverName == null) {
+
+			ServerNameGetter sng = new ServerNameGetter(event.getPlayer());
+			int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, sng, (long) 0, (long) 1L);
+			sng.setThreadId(threadId);
+		}
 		
 		
 		
@@ -348,13 +353,17 @@ public class ServerSelectionHandler implements Listener {
 						
 						if (itemInSlot != null) {
 							if (pInv.firstEmpty() == -1) {
-								//Player's Inventory is Full. Drop the other item.
-								event.getPlayer().getLocation().getWorld().dropItem(event.getPlayer().getLocation(), itemInSlot);
+//								//Player's Inventory is Full. Drop the other item.
+//								pInv.setItem(slot, serverSelector);
+//								event.getPlayer().getLocation().getWorld().dropItem(event.getPlayer().getLocation(), itemInSlot);
 								
-								pInv.setItem(slot, serverSelector);
+								
+								
+								//Perhaps instead just ignore people with full inventories, They probably should already have a compass. This will probably only happen 
+								//if someone /clear 's their inventory, and if so they're probably admin and know how to get the compass back.
 							}else{
 								//Player's Inventory is not Full. Put the item in their inventory in the open slot and put the server selector in the appropriate slot.
-								
+
 								
 								pInv.setItem(pInv.firstEmpty(), itemInSlot);
 								
@@ -377,55 +386,80 @@ public class ServerSelectionHandler implements Listener {
 	
 	@EventHandler
 	public void onPlayerInventoryInteract(InventoryClickEvent event) {
-//		if (event.getCurrentItem().equals(serverSelector)) {
-//			event.setCancelled(true);
-//			((Player) event.getWhoClicked()).openInventory(servers);
-//		}
+		
+		Bukkit.broadcastMessage("Inventory Click event");
+		
 		
 		Inventory inventory = event.getInventory();
 		if (inventory.equals(servers) || inventory.equals(warps)) {
 			Player player = (Player) event.getWhoClicked();
 			
+			player.sendMessage("In servers/warps inventory");
 			
 			event.setCancelled(true);
-			if (event.getCurrentItem().equals(warpSelector)) {
-				((Player) event.getWhoClicked()).openInventory(warps);
-			}else if (event.getCurrentItem().equals(serverSelector)) {
-				((Player) event.getWhoClicked()).openInventory(servers);
-			}else if (serverItems.containsValue(event.getCurrentItem())) {
-				
-				ServerTP server = serverItems.get(event.getCurrentItem());
-				if (server.getCommands() != null) {
-					if (server.getCommands().isEmpty() == false) {
-						for (String command : server.getCommands()) {
-							if (!command.equals(""))
-							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+			if (event.getCurrentItem() != null) {
+				if (event.getCurrentItem().equals(warpSelector)) {
+					((Player) event.getWhoClicked()).openInventory(warps);
+				}else if (event.getCurrentItem().equals(serverSelector)) {
+					((Player) event.getWhoClicked()).openInventory(servers);
+				}else if (serverItems.containsKey(event.getCurrentItem())) {
+					
+					ServerTP server = serverItems.get(event.getCurrentItem());
+					
+					Bukkit.getServer().broadcastMessage("Plugin's Determined Server Name: " + Main.serverName);
+					Bukkit.getServer().broadcastMessage("Menu.yml's Server Name: " + server.getServer());
+					
+					
+					if (!server.getServer().equals(Main.serverName)) {
+						
+							if (server.getCommands() != null) {
+								if (server.getCommands().isEmpty() == false) {
+									for (String command : server.getCommands()) {
+										if (!command.equals(""))
+										Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
+									}
+								}
+							}
+						
+						
+						teleportingPlayers.add(player.getUniqueId().toString());
+						
+						
+						ParticleGenerator pg = new ParticleGenerator(player, server);
+						int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
+						pg.setThreadId(threadId);
+						
+		//				new ParticleGenerator(player, serverItems.get(event.getCurrentItem())); //Yet to be tested
+						
+					}else{
+						player.sendMessage(ChatColor.RED + "You are already connected to this server!");
+					}
+				}else if (warpItems.containsKey(event.getCurrentItem())) {
+					player.sendMessage("WarpItems contains warp");
+					WarpTP warp = warpItems.get(event.getCurrentItem());
+					if (warp.getCommands() != null) {
+						if (warp.getCommands().isEmpty() == false) {
+							for (String command : warp.getCommands()) {
+								if (!command.equals(""))
+								Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
+							}
 						}
 					}
+					
+					teleportingPlayers.add(player.getUniqueId().toString());
+					
+					
+					player.sendMessage("Starting Particle Generator");
+					
+					//TODO: Handle Delays to make it work right
+					ParticleGenerator pg = new ParticleGenerator(player, warp);
+					int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
+					pg.setThreadId(threadId);
 				}
-				
-				
-				ParticleGenerator pg = new ParticleGenerator(player, server);
-				int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
-				pg.setThreadId(threadId);
-				
-//				new ParticleGenerator(player, serverItems.get(event.getCurrentItem())); //Yet to be tested
-			}else if (warpItems.containsValue(event.getCurrentItem())) {
-				WarpTP warp = warpItems.get(event.getCurrentItem());
-				if (warp.getCommands() != null) {
-					if (warp.getCommands().isEmpty() == false) {
-						for (String command : warp.getCommands()) {
-							if (!command.equals(""))
-							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
-						}
-					}
-				}
-				
-				
-				//TODO: Handle Delays to make it work right
-				ParticleGenerator pg = new ParticleGenerator(player, warp);
-				int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
-				pg.setThreadId(threadId);
+			}
+		}else{
+			if (event.getCurrentItem().equals(serverSelector)) {
+				event.setCancelled(true);
 			}
 		}
 	}
@@ -460,6 +494,8 @@ public class ServerSelectionHandler implements Listener {
 								event.setCancelled(true);
 								Bukkit.broadcastMessage("Opening Server Selector Inventory");
 								
+								updatePlaceHolders(event.getPlayer());
+								
 								event.getPlayer().openInventory(servers);
 							}
 						}
@@ -468,6 +504,8 @@ public class ServerSelectionHandler implements Listener {
 							if (action.equals(Action.LEFT_CLICK_AIR) || action.equals(Action.LEFT_CLICK_BLOCK)) {
 								event.setCancelled(true);
 								Bukkit.broadcastMessage("Opening Server Selector Inventory");
+								
+								updatePlaceHolders(event.getPlayer());
 								
 								event.getPlayer().openInventory(servers);
 							}
@@ -493,5 +531,65 @@ public class ServerSelectionHandler implements Listener {
 		  event.setCancelled(true);
 		  Bukkit.broadcastMessage("Cancelled");
 		}
+	}
+
+	public static void updatePlaceHolders(Player player) {
+		for (ServerTP server : ConfigLoader.servers.values()) {
+			
+			boolean containsPlaceHolders = false;
+			
+			for (String s : server.getLore()) {
+				if (s.contains("%count%") || s.contains("%player%")) {
+					containsPlaceHolders = true;
+				}
+			}
+			
+			if (containsPlaceHolders) {
+				List<String> temporaryLore = new ArrayList<String>();
+				
+				for (String lore : server.getLore()) {
+					temporaryLore.add(lore.replace("%player%", player.getName()));
+				}
+				
+				server.setLore(temporaryLore);
+			}
+			
+			requestPlayerCount(server.getServer(), player);
+		}
+		
+	}
+	
+	public static void requestPlayerCount(String serverName, Player player) {
+		Bukkit.getServer().getLogger().info("Getting Player Count");
+		ByteArrayDataOutput out = ByteStreams.newDataOutput();
+		
+		try {
+			out.writeUTF("PlayerCount");
+			out.writeUTF(serverName);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
+		
+		
+	}
+	
+	public static ItemStack getServerItemFromName(String name) {
+		for (ItemStack item : serverItems.keySet()) {
+			if (serverItems.get(item).getServer().equals(name)) {
+				return item;
+			}
+		}
+		return null;
+	}
+	
+	public static ServerTP getServerFromName(String name) {
+		for (ServerTP server : serverItems.values()) {
+			if (server.getServer().equals(name)) {
+				return server;
+			}
+		}
+		return null;
 	}
 }

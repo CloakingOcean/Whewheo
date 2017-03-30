@@ -15,6 +15,7 @@ public class ServerTP {
 
 	private int id;
 	private String name;
+	private String server;
 	private int slot;
 	private String material;
 	private Enchantment enchantment;
@@ -23,9 +24,10 @@ public class ServerTP {
 	private boolean enableCommands;
 	private List<String> commands;
 	
-	public ServerTP(int id, String name, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
+	public ServerTP(int id, String name, String server, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
 		this.id = id;
 		this.name = name;
+		this.setServer(server);
 		this.slot = slot;
 		this.material = material;
 		this.enchantment = enchantment;
@@ -159,6 +161,20 @@ public class ServerTP {
 	 */
 	public void setEnchantment(Enchantment enchantment) {
 		this.enchantment = enchantment;
+	}
+
+	/**
+	 * @return the server
+	 */
+	public String getServer() {
+		return server;
+	}
+
+	/**
+	 * @param server the server to set
+	 */
+	public void setServer(String server) {
+		this.server = server;
 	}
 	
 }

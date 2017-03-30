@@ -45,12 +45,14 @@ public class ConfigLoader {
 					ConfigurationSection section = Main.menuConfig.getConfigurationSection("servers." + key);
 					
 					String name = ConfigLoader.getColoredTextFromMenu("servers." + key + ".name");
+					String serverName = section.getString("server");
 					int slot = section.getInt("slot");
 					Bukkit.getServer().getLogger().info("Slot: " + slot);
 					String material = section.getString("material");
 					String enchantment = section.getString("enchantment");
 					int quantity = section.getInt("quantity");
 					List<String> lore = section.getStringList("lore");
+					
 					boolean enableCommands = section.getBoolean("enableCommands");
 					List<String> commands = section.getStringList("commands");
 					
@@ -74,7 +76,7 @@ public class ConfigLoader {
 						realEnchantment = Enchantment.getByName(enchantment);
 					}
 					
-					ServerTP server = new ServerTP(id, name, slot, material, realEnchantment, quantity, lore, enableCommands, commands);
+					ServerTP server = new ServerTP(id, name, serverName, slot, material, realEnchantment, quantity, lore, enableCommands, commands);
 					
 					servers.put(name, server);
 					Bukkit.getServer().getLogger().info("Successfully loaded: " + id + ". Name: " + name);
@@ -273,6 +275,7 @@ public class ConfigLoader {
 		ConfigurationSection s = Main.menuConfig.getConfigurationSection(path);
 		
 		if (s.contains("name") &&
+				s.contains("server") &&
 				s.contains("slot") &&
 				s.contains("material") &&
 				s.contains("enchantment") &&
