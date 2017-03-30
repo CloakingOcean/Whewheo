@@ -1,8 +1,9 @@
-package com.exitium.whewheo;
+package com.exitium.whewheo.init;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import com.exitium.whewheo.Main;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 

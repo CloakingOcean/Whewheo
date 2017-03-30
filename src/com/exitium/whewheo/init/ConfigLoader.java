@@ -1,4 +1,4 @@
-package com.exitium.whewheo;
+package com.exitium.whewheo.init;
 
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +10,10 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+
+import com.exitium.whewheo.Main;
+import com.exitium.whewheo.teleportobjects.ServerTP;
+import com.exitium.whewheo.teleportobjects.WarpTP;
 
 /**
  * Loads information from the config and menu configs into local lists.

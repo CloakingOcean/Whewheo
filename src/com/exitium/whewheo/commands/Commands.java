@@ -1,4 +1,4 @@
-package com.exitium.whewheo;
+package com.exitium.whewheo.commands;
 
 import java.util.Arrays;
 
@@ -9,10 +9,25 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import com.exitium.whewheo.Main;
+import com.exitium.whewheo.init.ConfigLoader;
+import com.exitium.whewheo.init.ServerSelectionHandler;
+import com.exitium.whewheo.teleportobjects.ServerTP;
+import com.exitium.whewheo.teleportobjects.WarpTP;
+
 import net.md_5.bungee.api.ChatColor;
 
 /**
  * CommandExecutor class for all Whewheo commands.
+ * 
+ * /ww                      |   Default command for Whewheo. Shows the help screen.
+ * /ww create <warpName>    |   Creates a new warp with the players current location.
+ * /ww enable <warpName>    |   Enables a disabled warp if all of the requirements are met.
+ * /ww reload               |   Reloads data from the config and menu files. Also resets items and inventories.
+ * /ww listwarps            |   Lists the warps currently enabled and loaded.
+ * /ww listservers          |   Lists the servers currently loaded.
+ * /ww teleport/tp <warp>   |   Teleports the player to a specific warp.
+ * /ww send <serverName>    |   Sends the player to a specific server.
  * 
  * @author Cloaking_Ocean
  * @date Mar 26, 2017
@@ -63,8 +78,6 @@ public class Commands implements CommandExecutor{
 							sender.sendMessage(server.getId() +  ": " + server.getName() + ".");
 						}
 					}
-				}else if(args[0].equalsIgnoreCase("getserver")) {
-					sender.sendMessage(Bukkit.getServerName());
 				}
 						
 			}else if (args.length == 2) {
@@ -175,6 +188,19 @@ public class Commands implements CommandExecutor{
 		}
 		//TODO: Send Help Message
 		return true;
+	}
+	
+	public void sendHelpMessage(CommandSender sender) {
+//		 * /ww                      |   Default command for Whewheo. Shows the help screen.
+//		 * /ww create <warpName>    |   Creates a new warp with the players current location.
+//		 * /ww enable <warpName>    |   Enables a disabled warp if all of the requirements are met.
+//		 * /ww reload               |   Reloads data from the config and menu files. Also resets items and inventories.
+//		 * /ww listwarps            |   Lists the warps currently enabled and loaded.
+//		 * /ww listservers          |   Lists the servers currently loaded.
+//		 * /ww teleport/tp <warp>   |   Teleports the player to a specific warp.
+//		 * /ww send <serverName>    |   Sends the player to a specific server.
+		
+		
 	}
 	
 	public void notPlayer(CommandSender sender) {

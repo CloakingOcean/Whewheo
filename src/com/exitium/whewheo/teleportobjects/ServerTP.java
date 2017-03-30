@@ -1,22 +1,21 @@
-package com.exitium.whewheo;
+package com.exitium.whewheo.teleportobjects;
 
 import java.util.List;
 
-import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
 
 /**
- * Wrapper class for warp teleport information.
+ * Wrapper class for server teleport information.
  * 
  * @author Cloaking_Ocean
  * @date Mar 26, 2017
  * @version 1.0
  */
-public class WarpTP {
+public class ServerTP {
 
 	private int id;
 	private String name;
-	private Location location;
+	private String server;
 	private int slot;
 	private String material;
 	private Enchantment enchantment;
@@ -25,10 +24,10 @@ public class WarpTP {
 	private boolean enableCommands;
 	private List<String> commands;
 	
-	public WarpTP(int id, String name, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
+	public ServerTP(int id, String name, String server, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
 		this.id = id;
 		this.name = name;
-		this.location = location;
+		this.setServer(server);
 		this.slot = slot;
 		this.material = material;
 		this.enchantment = enchantment;
@@ -64,20 +63,6 @@ public class WarpTP {
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-	
-	/**
-	 * @return the location
-	 */
-	public Location getLocation() {
-		return location;
-	}
-	
-	/**
-	 * @param location the location to set
-	 */
-	public void setLocation(Location location) {
-		this.location = location;
 	}
 
 	/**
@@ -176,6 +161,20 @@ public class WarpTP {
 	 */
 	public void setEnchantment(Enchantment enchantment) {
 		this.enchantment = enchantment;
+	}
+
+	/**
+	 * @return the server
+	 */
+	public String getServer() {
+		return server;
+	}
+
+	/**
+	 * @param server the server to set
+	 */
+	public void setServer(String server) {
+		this.server = server;
 	}
 	
 }

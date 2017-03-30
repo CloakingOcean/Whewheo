@@ -1,4 +1,4 @@
-package com.exitium.whewheo;
+package com.exitium.whewheo.init;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +21,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.exitium.whewheo.Main;
+import com.exitium.whewheo.particles.ParticleGenerator;
+import com.exitium.whewheo.teleportobjects.ServerTP;
+import com.exitium.whewheo.teleportobjects.WarpTP;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
@@ -426,7 +430,7 @@ public class ServerSelectionHandler implements Listener {
 						
 						
 						ParticleGenerator pg = new ParticleGenerator(player, server);
-						int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
+						int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 1L);
 						pg.setThreadId(threadId);
 						
 		//				new ParticleGenerator(player, serverItems.get(event.getCurrentItem())); //Yet to be tested
@@ -453,7 +457,7 @@ public class ServerSelectionHandler implements Listener {
 					
 					//TODO: Handle Delays to make it work right
 					ParticleGenerator pg = new ParticleGenerator(player, warp);
-					int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 20L);
+					int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 1L);
 					pg.setThreadId(threadId);
 				}
 			}

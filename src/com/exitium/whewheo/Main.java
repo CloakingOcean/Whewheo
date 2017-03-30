@@ -18,6 +18,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
+import com.exitium.whewheo.commands.Commands;
+import com.exitium.whewheo.init.ConfigLoader;
+import com.exitium.whewheo.init.ServerSelectionHandler;
+import com.exitium.whewheo.teleportobjects.ServerTP;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -42,39 +46,41 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 	public static FileConfiguration menuConfig;
 	public static File menuFile;
 	
+	//Server name returned by Bungeecord's Proxy.
 	public static String serverName;
 	
+	//Public static instance of the Main class for easier access.
 	public static Main instance;
 	
-	/** Runs on server startup*/
+	/** Runs on server startup.*/
 	@Override
 	public void onEnable() {
+		//Sets the public static instance of Main to this instance.
 		instance = this;
 		
-		//Initiates the config variables and copies the file if no exist.
+		//Initiates the config variables and copies the files if none exist.
 		initiateConfigFiles();
 		
-		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+		//Register Outgoing and Incoming Plugin Channel for BungeeCord to request the server name and player count.
+		Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(Main.instance, "BungeeCord", Main.instance);
+		
 		//Instantiates a new Config Loader to store information from the config
 		ConfigLoader loader = new ConfigLoader();
 		
+		//REgister listeners for ServerSelectionHandler.
 		Bukkit.getPluginManager().registerEvents(new ServerSelectionHandler(), this);
 		
 		//Sets command "/ww"'s executor to Commands.
 		getCommand("ww").setExecutor(new Commands());
 		
-		
-
-		Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(Main.instance, "BungeeCord");
-		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(Main.instance, "BungeeCord", Main.instance);
-		
-		
-		if (Bukkit.getServer().getOnlinePlayers().size() > 0) {
+		//Attempts to get the server name from the bungeecord proxy if a player is online.
+		if (Bukkit.getServer().getOnlinePlayers().size() > 0) { // If a player is online
 			
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
-			out.writeUTF("GetServer");
+			out.writeUTF("GetServer"); //Set channel to GetServer
 			
-			Bukkit.getServer().getOnlinePlayers().iterator().next().sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
+			Bukkit.getServer().getOnlinePlayers().iterator().next().sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());  //Get an online player to send the Plugin Message through.
 		}
 	}
 	

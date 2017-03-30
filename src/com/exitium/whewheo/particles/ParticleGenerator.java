@@ -1,11 +1,18 @@
-package com.exitium.whewheo;
+package com.exitium.whewheo.particles;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Particle;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+
+import com.exitium.whewheo.Main;
+import com.exitium.whewheo.init.ServerSelectionHandler;
+import com.exitium.whewheo.particles.ParticleEffect.ParticleColor;
+import com.exitium.whewheo.teleportobjects.ServerTP;
+import com.exitium.whewheo.teleportobjects.WarpTP;
 
 /**
  * This class generates particles for a teleporting player
+ * Should be functionally running at 20 ticks per second.
  * 
  * @author Cloaking_Ocean
  * @date Mar 27, 2017
@@ -20,11 +27,16 @@ public class ParticleGenerator implements Runnable{
 	
 	private int threadId;
 	
-	private int secondsPassed;
+	private double secondsPassed;
+	
+	private double t = 0;
+	final private double r = 5;
+
 	
 	public ParticleGenerator(Player player, WarpTP warp) {
 		secondsPassed = 0;
 		threadId = 0;
+		t = 0;
 		this.player = player;
 		this.warp = warp;
 	}
@@ -32,6 +44,7 @@ public class ParticleGenerator implements Runnable{
 	public ParticleGenerator(Player player, ServerTP server) {
 		secondsPassed = 0;
 		threadId = 0;
+		t = 0;
 		this.player = player;
 		this.server = server;
 	}
@@ -45,14 +58,44 @@ public class ParticleGenerator implements Runnable{
 			if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null ) {
 				if (ServerSelectionHandler.teleportingPlayers.contains(player.getUniqueId().toString())) {
 					
-					
-					double x = player.getLocation().getX();
-					double y = player.getLocation().getY() + 2;
-					double z = player.getLocation().getZ();
+					Location loc = player.getLocation();
 					
 					int count = 50;
 					
-					player.getLocation().getWorld().spawnParticle(Particle.FLAME, player.getLocation(), count);
+					t = t + Math.PI/8;
+					
+					double x = r*Math.cos(t);
+					double y = t;
+					double z = r*Math.sin(t);
+					loc.add(x, y, z);
+					ParticleEffect.FLAME.display(new ParticleColor() {
+						
+						@Override
+						public float getValueZ() {
+							// TODO Auto-generated method stub
+							return (float) loc.getX();
+						}
+						
+						@Override
+						public float getValueY() {
+							// TODO Auto-generated method stub
+							return (float) loc.getY();
+						}
+						
+						@Override
+						public float getValueX() {
+							// TODO Auto-generated method stub
+							return (float) loc.getZ();
+						}
+					}, loc, 100); // Should work
+					
+					
+					
+					
+					
+					
+					
+//					player.getLocation().getWorld().spawnParticle(Particle.FLAME, player.getLocation(), count);
 					
 //					player.getLocation().getWorld().spawnParticle(Particle.BLOCK_DUST, x, y, z, count, 1.0, 0.0, 0.0);
 //					player.getLocation().getWorld().spawnParticle(Particle.BLOCK_DUST, x, y, z, count, -1.0, 0.0, 0.0);
@@ -67,7 +110,9 @@ public class ParticleGenerator implements Runnable{
 					
 					
 					if (secondsPassed < delay) {
-						player.sendMessage("Teleportion will commence in " + (delay-secondsPassed));
+						if ((secondsPassed - (int) secondsPassed) == 0) {
+							player.sendMessage("Teleportion will commence in " + (delay-secondsPassed));
+						}
 					}else{
 						
 						Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Main.instance, new Runnable() {
@@ -93,7 +138,7 @@ public class ParticleGenerator implements Runnable{
 					Bukkit.getScheduler().cancelTask(threadId);
 				}
 				
-				secondsPassed++;
+				secondsPassed += (1.0/20.0);
 			}else{
 				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
 				Bukkit.getScheduler().cancelTask(threadId);
