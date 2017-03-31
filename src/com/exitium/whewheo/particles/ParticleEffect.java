@@ -68,6 +68,12 @@ public enum ParticleEffect {
 	 * <li>The speed value has no influence on this particle effect
 	 * </ul>
 	 */
+	DRAGONBREATH("dragonbreath", 42, 9),
+	ENDROD("endrod", 43, 9),
+	DAMAGEINDICATOR("damageindicator", 44, 9),
+	SWEEPATTACK("sweepattack", 45, 9),
+	FALLINGDUST("fallingdust", 46, 10, ParticleProperty.REQUIRES_DATA),
+	
 	EXPLOSION_HUGE("hugeexplosion", 2, -1),
 	/**
 	 * A particle effect which is displayed by launching fireworks:
@@ -532,7 +538,7 @@ public enum ParticleEffect {
 	 * @return Whether the data type is correct or not
 	 */
 	private static boolean isDataCorrect(ParticleEffect effect, ParticleData data) {
-		return ((effect == BLOCK_CRACK || effect == BLOCK_DUST) && data instanceof BlockData) || (effect == ITEM_CRACK && data instanceof ItemData);
+		return ((effect == BLOCK_CRACK || effect == BLOCK_DUST || effect == FALLINGDUST) && data instanceof BlockData) || (effect == ITEM_CRACK && data instanceof ItemData);
 	}
 
 	/**
@@ -1405,19 +1411,22 @@ public enum ParticleEffect {
 				return;
 			}
 			try {
-				version = Integer.parseInt(Character.toString(PackageType.getServerVersion().charAt(3)));
-				if (version > 7) {
-					enumParticle = PackageType.MINECRAFT_SERVER.getClass("EnumParticle");
-				}
-				Class<?> packetClass = PackageType.MINECRAFT_SERVER.getClass(version < 7 ? "Packet63WorldParticles" : "PacketPlayOutWorldParticles");
-				packetConstructor = ReflectionUtils.getConstructor(packetClass);
-				getHandle = ReflectionUtils.getMethod("CraftPlayer", PackageType.CRAFTBUKKIT_ENTITY, "getHandle");
-				playerConnection = ReflectionUtils.getField("EntityPlayer", PackageType.MINECRAFT_SERVER, false, "playerConnection");
-				sendPacket = ReflectionUtils.getMethod(playerConnection.getType(), "sendPacket", PackageType.MINECRAFT_SERVER.getClass("Packet"));
-			} catch (Exception exception) {
-				throw new VersionIncompatibleException("Your current bukkit version seems to be incompatible with this library", exception);
-			}
-			initialized = true;
+                String ver = PackageType.getServerVersion();
+                int un1 = ver.indexOf("_") + 1;
+                int un2 = ver.lastIndexOf("_");
+                version = Integer.parseInt(ver.substring(un1, un2));
+                if (version > 7) {
+                    enumParticle = PackageType.MINECRAFT_SERVER.getClass("EnumParticle");
+                }
+                Class<?> packetClass = PackageType.MINECRAFT_SERVER.getClass(version < 7 ? "Packet63WorldParticles" : "PacketPlayOutWorldParticles");
+                packetConstructor = ReflectionUtils.getConstructor(packetClass);
+                getHandle = ReflectionUtils.getMethod("CraftPlayer", PackageType.CRAFTBUKKIT_ENTITY, "getHandle");
+                playerConnection = ReflectionUtils.getField("EntityPlayer", PackageType.MINECRAFT_SERVER, false, "playerConnection");
+                sendPacket = ReflectionUtils.getMethod(playerConnection.getType(), "sendPacket", PackageType.MINECRAFT_SERVER.getClass("Packet"));
+            } catch (Exception exception) {
+                throw new VersionIncompatibleException("Your current bukkit version seems to be incompatible with this library", exception);
+            }
+            initialized = true;
 		}
 
 		/**

@@ -471,7 +471,7 @@ public class ServerSelectionHandler implements Listener {
 	@EventHandler
 	public void onPlayerMoveEvent(PlayerMoveEvent event) {
 		if (teleportingPlayers.contains(event.getPlayer().getUniqueId().toString())) {
-			if (!(event.getTo().getBlockX() == event.getFrom().getBlockX() && event.getTo().getBlockZ() == event.getFrom().getBlockZ())) {
+			if (!(event.getTo().getBlockX() == event.getFrom().getBlockX() && event.getTo().getBlockZ() == event.getFrom().getBlockZ() && event.getTo().getBlockY() == event.getFrom().getBlockY())) {
 				Bukkit.broadcastMessage("teleporting players contains!!");
 				event.getPlayer().sendMessage("Teleporation cancelled.");
 				teleportingPlayers.remove(event.getPlayer().getUniqueId().toString());

@@ -2,13 +2,16 @@ package com.exitium.whewheo.particles;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import com.exitium.whewheo.Main;
 import com.exitium.whewheo.init.ServerSelectionHandler;
-import com.exitium.whewheo.particles.ParticleEffect.ParticleColor;
 import com.exitium.whewheo.teleportobjects.ServerTP;
 import com.exitium.whewheo.teleportobjects.WarpTP;
+
+import net.minecraft.server.v1_11_R1.EnumParticle;
+import net.minecraft.server.v1_11_R1.PacketPlayOutWorldParticles;
 
 /**
  * This class generates particles for a teleporting player
@@ -30,7 +33,7 @@ public class ParticleGenerator implements Runnable{
 	private double secondsPassed;
 	
 	private double t = 0;
-	final private double r = 5;
+	final private double r = 1;
 
 	
 	public ParticleGenerator(Player player, WarpTP warp) {
@@ -60,36 +63,92 @@ public class ParticleGenerator implements Runnable{
 					
 					Location loc = player.getLocation();
 					
-					int count = 50;
+					int count = 1;
 					
 					t = t + Math.PI/8;
 					
-					double x = r*Math.cos(t);
-					double y = t;
-					double z = r*Math.sin(t);
-					loc.add(x, y, z);
-					ParticleEffect.FLAME.display(new ParticleColor() {
+					
+					for (int i = 0; i < 10; i++) {
+						double x = (r - (.09) * i)*Math.cos(t + (Math.PI/8)/2 * i);
+						double y = i * (Math.PI/8)/1.50;
+						double z = (r - (.09) * i)*Math.sin(t + (Math.PI/8)/2 * i);
+						loc.add(x, y, z);
 						
-						@Override
-						public float getValueZ() {
-							// TODO Auto-generated method stub
-							return (float) loc.getX();
-						}
+//						loc.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, loc.getX(), loc.getY(), loc.getZ(), count);
 						
-						@Override
-						public float getValueY() {
-							// TODO Auto-generated method stub
-							return (float) loc.getY();
-						}
 						
-						@Override
-						public float getValueX() {
-							// TODO Auto-generated method stub
-							return (float) loc.getZ();
-						}
-					}, loc, 100); // Should work
+						ParticleEffect.EXPLOSION_HUGE.display(0.1f, 0.1f, 0.1f, 1.0f, 1, loc, player);
+						
+//						ParticleEffect.NAME.display(float offsetX, float offsetY, float offsetZ, float speed, int amount, Location center, List<Player> players);
+						
+						
+//						PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
+//								EnumParticle.CRIT,
+//								false,
+//								
+//								(float) loc.getX(), //float
+//								(float) loc.getY(), //float 
+//								(float) loc.getZ(), //float
+//								
+//								0, //x offset
+//								0, //y offset
+//								0, //z offset
+//								
+//								1, //Speed
+//								1,  //Number of Particles
+//								null
+//						);
+//						
+//						((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
+//						
+						
+						
+						
+						
+						loc.subtract(x, y, z);
+					}
 					
 					
+					
+					
+					
+//					loc.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, loc.getX(), loc.getY() + 2.5, loc.getZ(), count*20);
+					
+					PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
+							EnumParticle.VILLAGER_HAPPY,
+							true,
+							
+							(float) loc.getX(), //float
+							(float) (loc.getY() + 2.5), //float 
+							(float) loc.getZ(), //float
+							
+							0, //x offset
+							0, //y offset
+							0, //z offset
+							
+							1, //Speed
+							10*20,  //Number of Particles
+							null
+					);
+					
+					((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
+					
+					
+//					Example 1:
+//					
+//					for (int i = 0; i < 15; i++) {
+//						
+//						if (i%2 == 0) {
+//							double x = r*Math.cos(t + (Math.PI/8)*i);
+//							double y = t;
+//							double z = r*Math.sin(t + (Math.PI/8)*i);
+//							loc.add(x, y, z);
+//							
+//							loc.getWorld().spawnParticle(Particle.HEART, loc.getX(), loc.getY(), loc.getZ(), count);
+//							
+//							loc.subtract(x, y, z);
+//						}
+//					}
 					
 					
 					
