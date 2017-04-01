@@ -2,16 +2,13 @@ package com.exitium.whewheo.particles;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import com.exitium.whewheo.Main;
 import com.exitium.whewheo.init.ServerSelectionHandler;
 import com.exitium.whewheo.teleportobjects.ServerTP;
 import com.exitium.whewheo.teleportobjects.WarpTP;
-
-import net.minecraft.server.v1_11_R1.EnumParticle;
-import net.minecraft.server.v1_11_R1.PacketPlayOutWorldParticles;
 
 /**
  * This class generates particles for a teleporting player
@@ -78,6 +75,8 @@ public class ParticleGenerator implements Runnable{
 						
 //						ParticleEffect.FLAME.display(0.0f, 0.0f, 0.0f, (float) speed, 1, loc, player);
 						
+						ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, loc, 100);
+						
 						//Spigot API
 //						loc.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, loc.getX(), loc.getY(), loc.getZ(), count);
 						
@@ -88,9 +87,9 @@ public class ParticleGenerator implements Runnable{
 						
 						
 						
-						int speed = 100;
-						PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(EnumParticle.VILLAGER_HAPPY, false, (float) loc.getX(), (float) loc.getY(), (float) loc.getZ(), 0, 0, 0, speed, 1, null);
-						((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
+//						int speed = 100;
+//						PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(EnumParticle.FLAME, false, (float) loc.getX(), (float) loc.getY(), (float) loc.getZ(), 0, 0, 0, speed, 1, null);
+//						((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
 //						
 						
 						
