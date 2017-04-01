@@ -74,32 +74,23 @@ public class ParticleGenerator implements Runnable{
 						double z = (r - (.09) * i)*Math.sin(t + (Math.PI/8)/2 * i);
 						loc.add(x, y, z);
 						
+						
+						
+//						ParticleEffect.FLAME.display(0.0f, 0.0f, 0.0f, (float) speed, 1, loc, player);
+						
+						//Spigot API
 //						loc.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, loc.getX(), loc.getY(), loc.getZ(), count);
 						
+						//Particle API
 						
-						ParticleEffect.EXPLOSION_HUGE.display(0.1f, 0.1f, 0.1f, 1.0f, 1, loc, player);
 						
 //						ParticleEffect.NAME.display(float offsetX, float offsetY, float offsetZ, float speed, int amount, Location center, List<Player> players);
 						
 						
-//						PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
-//								EnumParticle.CRIT,
-//								false,
-//								
-//								(float) loc.getX(), //float
-//								(float) loc.getY(), //float 
-//								(float) loc.getZ(), //float
-//								
-//								0, //x offset
-//								0, //y offset
-//								0, //z offset
-//								
-//								1, //Speed
-//								1,  //Number of Particles
-//								null
-//						);
-//						
-//						((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
+						
+						int speed = 100;
+						PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(EnumParticle.VILLAGER_HAPPY, false, (float) loc.getX(), (float) loc.getY(), (float) loc.getZ(), 0, 0, 0, speed, 1, null);
+						((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
 //						
 						
 						
@@ -114,24 +105,24 @@ public class ParticleGenerator implements Runnable{
 					
 //					loc.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, loc.getX(), loc.getY() + 2.5, loc.getZ(), count*20);
 					
-					PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
-							EnumParticle.VILLAGER_HAPPY,
-							true,
-							
-							(float) loc.getX(), //float
-							(float) (loc.getY() + 2.5), //float 
-							(float) loc.getZ(), //float
-							
-							0, //x offset
-							0, //y offset
-							0, //z offset
-							
-							1, //Speed
-							10*20,  //Number of Particles
-							null
-					);
-					
-					((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
+//					PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
+//							EnumParticle.VILLAGER_HAPPY,
+//							true,
+//							
+//							(float) loc.getX(), //float
+//							(float) (loc.getY() + 2.5), //float 
+//							(float) loc.getZ(), //float
+//							
+//							0, //x offset
+//							0, //y offset
+//							0, //z offset
+//							
+//							1, //Speed
+//							10*20,  //Number of Particles
+//							null
+//					);
+//					
+//					((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
 					
 					
 //					Example 1:
