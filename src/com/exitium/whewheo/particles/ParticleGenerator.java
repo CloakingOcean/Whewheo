@@ -3,6 +3,7 @@ package com.exitium.whewheo.particles;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import com.exitium.whewheo.Main;
@@ -18,24 +19,26 @@ import com.exitium.whewheo.teleportobjects.WarpTP;
  * @date Mar 27, 2017
  * @version 1.0
  */
-public class ParticleGenerator implements Runnable{
+public class ParticleGenerator extends BukkitRunnable{
 	
 	private Player player;
 	private WarpTP warp;
 	
 	private ServerTP server;
 	
-	private int threadId;
+//	private int threadId;
 	
 	private double secondsPassed;
 	
 	private double t = 0;
 	final private double r = 1;
 
+	private int currentSecond = 0;
+	
 	
 	public ParticleGenerator(Player player, WarpTP warp) {
 		secondsPassed = 0;
-		threadId = 0;
+//		threadId = 0;
 		t = 0;
 		this.player = player;
 		this.warp = warp;
@@ -43,7 +46,7 @@ public class ParticleGenerator implements Runnable{
 	
 	public ParticleGenerator(Player player, ServerTP server) {
 		secondsPassed = 0;
-		threadId = 0;
+//		threadId = 0;
 		t = 0;
 		this.player = player;
 		this.server = server;
@@ -51,9 +54,9 @@ public class ParticleGenerator implements Runnable{
 	
 	@Override
 	public void run() {
-		Bukkit.getServer().broadcastMessage("Running Thread");
-		if (threadId != 0) {
-			Bukkit.getServer().broadcastMessage("Thread Id Set!");
+//		Bukkit.getServer().broadcastMessage("Running Thread");
+//		if (threadId != 0) {
+//			Bukkit.getServer().broadcastMessage("Thread Id Set!");
 			int delay = Main.config.getInt("general.teleportDelay");
 			if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null ) {
 				if (ServerSelectionHandler.teleportingPlayers.contains(player.getUniqueId().toString())) {
@@ -98,9 +101,27 @@ public class ParticleGenerator implements Runnable{
 						loc.subtract(x, y, z);
 					}
 					
+					double distance = 0.2;
+					
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX(), loc.getY()+ 2.7, loc.getZ()), 100);
+					
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX() + distance, loc.getY()+ 2.7, loc.getZ()), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX() - distance, loc.getY()+ 2.7, loc.getZ()), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX(), loc.getY()+ 2.7, loc.getZ() + distance), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX(), loc.getY()+ 2.7, loc.getZ() - distance), 100);
+					
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX() + distance, loc.getY()+ 2.7, loc.getZ() + distance), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX() + distance, loc.getY()+ 2.7, loc.getZ() - distance), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX() - distance, loc.getY()+ 2.7, loc.getZ() + distance), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX() - distance, loc.getY()+ 2.7, loc.getZ() - distance), 100);
 					
 					
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX(), loc.getY()+ 3, loc.getZ()), 100);
 					
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX() + 0.1, loc.getY()+ 3, loc.getZ()), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX() - 0.1, loc.getY()+ 3, loc.getZ()), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX(), loc.getY()+ 3, loc.getZ() + 0.1), 100);
+					ParticleEffect.CLOUD.display(new Vector(0,0,0), 1, new Location(loc.getWorld(), loc.getX(), loc.getY()+ 3, loc.getZ() - 0.1), 100);
 					
 //					loc.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, loc.getX(), loc.getY() + 2.5, loc.getZ(), count*20);
 					
@@ -155,13 +176,13 @@ public class ParticleGenerator implements Runnable{
 					
 					
 					
-					
-					
-					
 					if (secondsPassed < delay) {
-						if ((secondsPassed - (int) secondsPassed) == 0) {
+						
+						if (currentSecond < (int) secondsPassed) {
 							player.sendMessage("Teleportion will commence in " + (delay-secondsPassed));
 						}
+						
+						currentSecond = (int) secondsPassed;
 					}else{
 						
 						Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Main.instance, new Runnable() {
@@ -184,28 +205,14 @@ public class ParticleGenerator implements Runnable{
 					}
 				}else{
 					Bukkit.getServer().broadcastMessage("Cancelled task because is no longer a teleporting Player");
-					Bukkit.getScheduler().cancelTask(threadId);
+					cancel();
 				}
 				
 				secondsPassed += (1.0/20.0);
 			}else{
 				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-				Bukkit.getScheduler().cancelTask(threadId);
+				cancel();
 			}
-		}
-	}
-
-	/**
-	 * @return the threadId
-	 */
-	public int getThreadId() {
-		return threadId;
-	}
-
-	/**
-	 * @param threadId the threadId to set
-	 */
-	public void setThreadId(int threadId) {
-		this.threadId = threadId;
+//		}
 	}
 }

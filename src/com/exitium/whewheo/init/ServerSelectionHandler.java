@@ -429,9 +429,7 @@ public class ServerSelectionHandler implements Listener {
 						teleportingPlayers.add(player.getUniqueId().toString());
 						
 						
-						ParticleGenerator pg = new ParticleGenerator(player, server);
-						int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 1L);
-						pg.setThreadId(threadId);
+						new ParticleGenerator(player, server).runTaskTimer(Main.instance, 0, 1);
 						
 		//				new ParticleGenerator(player, serverItems.get(event.getCurrentItem())); //Yet to be tested
 						
@@ -456,9 +454,7 @@ public class ServerSelectionHandler implements Listener {
 					player.sendMessage("Starting Particle Generator");
 					
 					//TODO: Handle Delays to make it work right
-					ParticleGenerator pg = new ParticleGenerator(player, warp);
-					int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, pg, (long) 0, (long) 1L);
-					pg.setThreadId(threadId);
+					new ParticleGenerator(player, warp).runTaskTimer(Main.instance, 0, 1);
 				}
 			}
 		}else{
