@@ -5,6 +5,9 @@ import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
 
+import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
+import com.exitium.whewheo.particles.send.ValidSendGenerators;
+
 /**
  * Wrapper class for warp teleport information.
  * 
@@ -24,8 +27,11 @@ public class WarpTP {
 	private List<String> lore;
 	private boolean enableCommands;
 	private List<String> commands;
+	private ValidSendGenerators send;
+	private ValidReceiveGenerators receive;
 	
-	public WarpTP(int id, String name, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
+	
+	public WarpTP(int id, String name, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands, ValidSendGenerators send, ValidReceiveGenerators receive) {
 		this.id = id;
 		this.name = name;
 		this.location = location;
@@ -36,6 +42,8 @@ public class WarpTP {
 		this.lore = lore;
 		this.enableCommands = enableCommands;
 		this.commands = commands;
+		this.setSend(send);
+		this.setReceive(receive);
 	}
 	
 	/**
@@ -177,5 +185,32 @@ public class WarpTP {
 	public void setEnchantment(Enchantment enchantment) {
 		this.enchantment = enchantment;
 	}
-	
+
+	/**
+	 * @return the send
+	 */
+	public ValidSendGenerators getSend() {
+		return send;
+	}
+
+	/**
+	 * @param send the send to set
+	 */
+	public void setSend(ValidSendGenerators send) {
+		this.send = send;
+	}
+
+	/**
+	 * @return the receive
+	 */
+	public ValidReceiveGenerators getReceive() {
+		return receive;
+	}
+
+	/**
+	 * @param receive the receive to set
+	 */
+	public void setReceive(ValidReceiveGenerators receive) {
+		this.receive = receive;
+	}
 }

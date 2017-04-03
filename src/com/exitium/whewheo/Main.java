@@ -15,6 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
@@ -52,6 +53,21 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 	//Public static instance of the Main class for easier access.
 	public static Main instance;
 	
+	/*
+	 * Permissions
+	 */
+	private static String superPerm = "whewheo.";
+	public static Permission createWarp = new Permission(superPerm + "createwarp");
+	public static Permission enableWarp = new Permission(superPerm + "enablewarp");
+	public static Permission reload = new Permission(superPerm + "reload");
+	public static Permission open = new Permission(superPerm + "open");
+	
+	
+	
+	
+	public static String prefix = "";
+	
+	
 	/** Runs on server startup.*/
 	@Override
 	public void onEnable() {
@@ -60,6 +76,16 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		
 		//Initiates the config variables and copies the files if none exist.
 		initiateConfigFiles();
+		
+		if (Main.config.contains("general")) {
+			if (Main.config.getConfigurationSection("general").contains("prefix")) {
+				prefix = ChatColor.translateAlternateColorCodes('&', Main.config.getString("general.prefix")) + " ";
+			}else{
+				Bukkit.getServer().getLogger().severe("Couldn't find \"prefix\" in general");
+			}
+		}else{
+			Bukkit.getServer().getLogger().severe("Couldn't find \"general\" in config");
+		}
 		
 		//Register Outgoing and Incoming Plugin Channel for BungeeCord to request the server name and player count.
 		Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -128,12 +154,12 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 	/** Teleports a player to the center of a target location.*/
 	public static void centeredTP(Player player, Location loc) {
 		
+		//By default, a teleport sends a player to the 0.0, 0.0 corner of a block, so we add half a block (0.5) on each side to center it.
+		loc = new Location(loc.getWorld(), loc.getBlockX() + 0.5, loc.getY(), loc.getBlockZ() + 0.5);
+
 		//Maintains where the player is looking.
 		loc.setPitch(player.getLocation().getPitch());
 		loc.setYaw(player.getLocation().getYaw());
-		
-		//By default, a teleport sends a player to the 0.0, 0.0 corner of a block, so we add half a block (0.5) on each side to center it.
-		loc = loc.add(0.5, 0.0, 0.5);
 		
 		//Teleports the player
 		player.teleport(loc);
@@ -159,10 +185,9 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		player.sendPluginMessage(instance, "BungeeCord", b.toByteArray());
 	}
 
-	/** */
+	/** Receives a message from Bungeecord and handles it appropriately*/
 	@Override
 	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-		Bukkit.broadcastMessage("RECIEVED INFORMATION!");
 		// TODO Auto-generated method stub
 		if (!channel.equals("BungeeCord")) {
 			return;
@@ -171,18 +196,13 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		ByteArrayDataInput in = ByteStreams.newDataInput(message);
 		String subchannel = in.readUTF();
 		if (subchannel.equals("GetServer")) {
-			Bukkit.getServer().getLogger().info("Got Name");
 			String servername = in.readUTF();
 			
 			serverName = servername;
 		} else if (subchannel.equals("PlayerCount")) {
-			Bukkit.getServer().broadcastMessage("Got Player Count");
 			
 			String serverName = in.readUTF(); // Name of server, as given in the arguments
 			int playerCount = in.readInt();
-	
-			Bukkit.broadcastMessage("ServerName: " + serverName);
-			Bukkit.broadcastMessage("PlayerCount: " + playerCount);
 			
 			ServerTP server = ServerSelectionHandler.getServerFromName(serverName);
 			
@@ -202,10 +222,8 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 			for (String l : serverItemMeta.getLore()) {
 				if (l.contains("&")) {
 					lore.add(ChatColor.translateAlternateColorCodes('&', l).replace("%count%", playerCount + ""));
-					Bukkit.broadcastMessage("Changed to" + ChatColor.translateAlternateColorCodes('&', l).replace("%count%", playerCount + ""));
 				}else{
 					lore.add(l.replace("%count%", playerCount + ""));
-					Bukkit.broadcastMessage("Changed to "  + l.replace("%count%", playerCount + ""));
 				}
 			}
 //			
@@ -229,5 +247,19 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 			ServerSelectionHandler.servers.setItem(server.getSlot(), serverItem);
 			
 		}
+	}
+	
+	/** Gets a specified message from the config*/
+	public static String msg(String message) {
+		if (Main.config.contains("messages")) {
+			if (Main.config.getConfigurationSection("messages").contains(message)) {
+				return ChatColor.translateAlternateColorCodes('&', Main.config.getString("messages." + message));
+			}else{
+				Bukkit.getLogger().severe("Couldn't find \"" + message + "\" in messages");
+			}
+		}else{
+			Bukkit.getLogger().severe("Couldn't find \"messages\" in config");
+		}
+		return "";
 	}
 }

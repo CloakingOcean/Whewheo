@@ -1,0 +1,41 @@
+servers:
+  '1':
+    name: sample
+    server: lobby
+    slot: 0
+    material: '341:0'
+    enchantment: 'null'
+    quantity: 1
+    lore:
+    - ''
+    - '&eThis is an'
+    - '&eexample lore.'
+    - '&ePlayer: %player%'
+    - '&aPlayers Online: &e%count%'
+    enableCommands: true
+    commands:
+    - 'p:help'
+    - 's:say %player% has teleported'
+    sendEffect: SPIRAL
+    receiveEffect: EMERALD
+warps:
+  '1':
+    name: Example
+    server: warp1
+    location: world:0:70:0
+    enabled: true
+    slot: 14
+    material: '341:0'
+    enchantment: 'null'
+    quantity: 1
+    lore:
+    - ''
+    - '&eThis is an'
+    - '&eexample lore.'
+    - ''
+    - '&aPlayers Online: &e%count%'
+    enableCommands: true
+    commands:
+    - say %player%
+    sendEffect: SPIRAL
+    receiveEffect: EMERALD

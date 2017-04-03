@@ -24,3 +24,13 @@ warpMenu:
   size: 45
 general:
   teleportDelay: 3
+  prefix: '&b[&9Whewheo&b]&7'
+messages:
+  reloadedConfig: "Successfully reloaded config"
+  createdWarp: "You have successfully added a new warp."
+  warpAlreadyEnabled: "This warp is already enabled!"
+  enabledWarp: "Enabled Warp"
+  noWarpsSaved: "No warps have been saved yet"
+  alreadyConnected: "You are already connected to this server"
+  teleportationCancelled: "Teleportation Cancelled"
+  teleportationWillCommenceIn: "Teleportation will commence in %time%"

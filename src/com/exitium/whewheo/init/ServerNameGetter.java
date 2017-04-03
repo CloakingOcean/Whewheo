@@ -17,21 +17,25 @@ import com.google.common.io.ByteStreams;
 public class ServerNameGetter implements Runnable{
 	
 
+	//Player Reference
 	private Player player;
+	
+	//Thread id of this current thread
 	private int threadId;
+	
 	
 	public ServerNameGetter(Player player) {
 		threadId = 0;
 		this.player = player;
 	}
 	
+	/** Continually checks for the player until they have actually joind the server. Once they have actually joined, it sends a BungeeRequest to get the server's name*/
 	@Override
 	public void run() {
 		Bukkit.getServer().broadcastMessage("Running Thread");
 		if (threadId != 0) {
 			if (Main.serverName == null) {
 				if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null) {
-					Bukkit.getServer().getLogger().info("Getting Server Name");
 					ByteArrayDataOutput out = ByteStreams.newDataOutput();
 					
 					try {
@@ -43,8 +47,6 @@ public class ServerNameGetter implements Runnable{
 					player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
 	
 					
-				}else{
-					Bukkit.getServer().getLogger().info("Player is null");
 				}
 			}else{
 				Bukkit.getServer().getScheduler().cancelTask(threadId);

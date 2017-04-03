@@ -199,7 +199,7 @@ public enum ParticleEffect {
 	 * <li>Only the motion on the y-axis can be controlled, the motion on the x- and z-axis are multiplied by 0.1 when setting the values to 0
 	 * </ul>
 	 */
-	SPELL_WITCH("witchMagic", 17, -1),
+	SPELL_WITCH("witchMagic", 17, -1, ParticleProperty.DIRECTIONAL),
 	/**
 	 * A particle effect which is displayed by blocks beneath a water source:
 	 * <ul>

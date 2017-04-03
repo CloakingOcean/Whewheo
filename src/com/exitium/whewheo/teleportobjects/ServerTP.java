@@ -4,6 +4,11 @@ import java.util.List;
 
 import org.bukkit.enchantments.Enchantment;
 
+import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
+import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
+import com.exitium.whewheo.particles.send.SendParticleGenerator;
+import com.exitium.whewheo.particles.send.ValidSendGenerators;
+
 /**
  * Wrapper class for server teleport information.
  * 
@@ -23,8 +28,10 @@ public class ServerTP {
 	private List<String> lore;
 	private boolean enableCommands;
 	private List<String> commands;
+	private ValidSendGenerators send;
+	private ValidReceiveGenerators receive;
 	
-	public ServerTP(int id, String name, String server, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands) {
+	public ServerTP(int id, String name, String server, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands, ValidSendGenerators send, ValidReceiveGenerators receive) {
 		this.id = id;
 		this.name = name;
 		this.setServer(server);
@@ -35,6 +42,8 @@ public class ServerTP {
 		this.lore = lore;
 		this.enableCommands = enableCommands;
 		this.commands = commands;
+		this.send = send;
+		this.receive = receive;
 	}
 	
 	/**
@@ -175,6 +184,34 @@ public class ServerTP {
 	 */
 	public void setServer(String server) {
 		this.server = server;
+	}
+
+	/**
+	 * @return the send
+	 */
+	public ValidSendGenerators getSend() {
+		return send;
+	}
+
+	/**
+	 * @param send the send to set
+	 */
+	public void setSend(ValidSendGenerators send) {
+		this.send = send;
+	}
+
+	/**
+	 * @return the receive
+	 */
+	public ValidReceiveGenerators getReceive() {
+		return receive;
+	}
+
+	/**
+	 * @param receive the receive to set
+	 */
+	public void setReceive(ValidReceiveGenerators receive) {
+		this.receive = receive;
 	}
 	
 }

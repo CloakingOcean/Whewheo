@@ -23,6 +23,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.exitium.whewheo.Main;
 import com.exitium.whewheo.particles.ParticleGenerator;
+import com.exitium.whewheo.particles.send.SendParticleGenerator;
+import com.exitium.whewheo.particles.send.generators.NetherPortal;
+import com.exitium.whewheo.particles.send.generators.Spiral;
 import com.exitium.whewheo.teleportobjects.ServerTP;
 import com.exitium.whewheo.teleportobjects.WarpTP;
 import com.google.common.io.ByteArrayDataOutput;
@@ -39,6 +42,10 @@ import net.md_5.bungee.api.ChatColor;
  */
 public class ServerSelectionHandler implements Listener {
 	
+	
+	/*
+	 * TODO: PERHAPS MOVE ALL UNRELATED LISTENRS TO A SEPARATE CLASS FOR ORGANIZATIONAL PURPOSES.
+	 */
 
 	private static ItemStack bluePanel;
 	
@@ -69,6 +76,7 @@ public class ServerSelectionHandler implements Listener {
 		init();
 	}
 	
+	/** Initializes the components for the ServerSelectionHandler class*/
 	public static void init() {
 		serverItems = new HashMap<ItemStack, ServerTP>();
 		warpItems = new HashMap<ItemStack, WarpTP>();
@@ -79,7 +87,7 @@ public class ServerSelectionHandler implements Listener {
 		setupInventories();
 	}
 	
-	
+	/** Creates items from the loaded warps and servers objects*/
 	public static void setupItems() {
 		if (Main.config.contains("serverSelector")) {
 			if (Main.config.getConfigurationSection("serverSelector").contains("name") 
@@ -158,6 +166,7 @@ public class ServerSelectionHandler implements Listener {
 		bluePanel.setItemMeta(bluePanelMeta);
 	}
 	
+	/** Loads the created warps and servers items into the appropriate inventories*/
 	public static void setupInventories() {
 		
 		if (Main.config.contains("serverMenu")) {
@@ -327,8 +336,6 @@ public class ServerSelectionHandler implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		
-		Bukkit.getServer().getLogger().info("PLAYER JOIN EVENT");
-		
 		if (Main.serverName == null) {
 
 			ServerNameGetter sng = new ServerNameGetter(event.getPlayer());
@@ -388,17 +395,16 @@ public class ServerSelectionHandler implements Listener {
 		}
 	}
 	
+	/** Runs when a player clicks in an inventory
+	 *  Handles all interaction inside of a custom inventory
+	 */
 	@EventHandler
 	public void onPlayerInventoryInteract(InventoryClickEvent event) {
-		
-		Bukkit.broadcastMessage("Inventory Click event");
 		
 		
 		Inventory inventory = event.getInventory();
 		if (inventory.equals(servers) || inventory.equals(warps)) {
 			Player player = (Player) event.getWhoClicked();
-			
-			player.sendMessage("In servers/warps inventory");
 			
 			event.setCancelled(true);
 			if (event.getCurrentItem() != null) {
@@ -410,17 +416,25 @@ public class ServerSelectionHandler implements Listener {
 					
 					ServerTP server = serverItems.get(event.getCurrentItem());
 					
-					Bukkit.getServer().broadcastMessage("Plugin's Determined Server Name: " + Main.serverName);
-					Bukkit.getServer().broadcastMessage("Menu.yml's Server Name: " + server.getServer());
-					
 					
 					if (!server.getServer().equals(Main.serverName)) {
 						
 							if (server.getCommands() != null) {
 								if (server.getCommands().isEmpty() == false) {
 									for (String command : server.getCommands()) {
-										if (!command.equals(""))
-										Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
+										if (command.contains("%player")) {
+											command = command.replace("%player%", player.getName());
+										}
+										
+										if (command.startsWith("p:")) {
+											command = command.substring(2);
+											Bukkit.getServer().dispatchCommand(player, command);
+										}else if (command.startsWith("s:")) {
+											command = command.substring(2);
+											Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+										}else{
+											Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+										}
 									}
 								}
 							}
@@ -428,33 +442,51 @@ public class ServerSelectionHandler implements Listener {
 						
 						teleportingPlayers.add(player.getUniqueId().toString());
 						
+						player.closeInventory();
 						
-						new ParticleGenerator(player, server).runTaskTimer(Main.instance, 0, 1);
+//						new Spiral(player, server).runTaskTimer(Main.instance, 0, 1);
+						ParticleGenerator generator = getGenerator(player, server);
 						
-		//				new ParticleGenerator(player, serverItems.get(event.getCurrentItem())); //Yet to be tested
+						generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
 						
 					}else{
-						player.sendMessage(ChatColor.RED + "You are already connected to this server!");
+						player.sendMessage(Main.prefix + Main.msg("alreadyConnected"));
 					}
 				}else if (warpItems.containsKey(event.getCurrentItem())) {
-					player.sendMessage("WarpItems contains warp");
 					WarpTP warp = warpItems.get(event.getCurrentItem());
 					if (warp.getCommands() != null) {
 						if (warp.getCommands().isEmpty() == false) {
 							for (String command : warp.getCommands()) {
-								if (!command.equals(""))
-								Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
+								if (!command.equals("")) {
+									
+									
+									if (command.contains("%player")) {
+										command = command.replace("%player%", player.getName());
+									}
+									
+									if (command.startsWith("p:")) {
+										command = command.substring(2);
+										Bukkit.getServer().dispatchCommand(player, command);
+									}else if (command.startsWith("s:")) {
+										command = command.substring(2);
+										Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+									}else{
+										Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+									}
+								}
 							}
 						}
 					}
 					
 					teleportingPlayers.add(player.getUniqueId().toString());
 					
+					player.closeInventory();
 					
-					player.sendMessage("Starting Particle Generator");
 					
 					//TODO: Handle Delays to make it work right
-					new ParticleGenerator(player, warp).runTaskTimer(Main.instance, 0, 1);
+					ParticleGenerator generator = getGenerator(player, warp);
+					
+					generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
 				}
 			}
 		}else{
@@ -464,17 +496,22 @@ public class ServerSelectionHandler implements Listener {
 		}
 	}
 	
+	/** Runs when a player moves
+	 *  Cancels teleportations when a player moves.
+	 */
 	@EventHandler
 	public void onPlayerMoveEvent(PlayerMoveEvent event) {
 		if (teleportingPlayers.contains(event.getPlayer().getUniqueId().toString())) {
 			if (!(event.getTo().getBlockX() == event.getFrom().getBlockX() && event.getTo().getBlockZ() == event.getFrom().getBlockZ() && event.getTo().getBlockY() == event.getFrom().getBlockY())) {
-				Bukkit.broadcastMessage("teleporting players contains!!");
-				event.getPlayer().sendMessage("Teleporation cancelled.");
+				event.getPlayer().sendMessage(Main.prefix + Main.msg("teleportationCancelled"));
 				teleportingPlayers.remove(event.getPlayer().getUniqueId().toString());
 			}
 		}
 	}
 	
+	/** Runs when a player interacts with anything.
+	 *  Handles the serverSelection Item.
+	 */
 	@EventHandler
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		if (event.getItem() != null) {
@@ -492,7 +529,6 @@ public class ServerSelectionHandler implements Listener {
 						if (Main.config.getBoolean("serverSelector.rightClick")) {
 							if (action.equals(Action.RIGHT_CLICK_AIR) || action.equals(Action.RIGHT_CLICK_BLOCK)) {
 								event.setCancelled(true);
-								Bukkit.broadcastMessage("Opening Server Selector Inventory");
 								
 								updatePlaceHolders(event.getPlayer());
 								
@@ -502,9 +538,7 @@ public class ServerSelectionHandler implements Listener {
 						
 						if (Main.config.getBoolean("serverSelector.leftClick")) {
 							if (action.equals(Action.LEFT_CLICK_AIR) || action.equals(Action.LEFT_CLICK_BLOCK)) {
-								event.setCancelled(true);
-								Bukkit.broadcastMessage("Opening Server Selector Inventory");
-								
+								event.setCancelled(true);								
 								updatePlaceHolders(event.getPlayer());
 								
 								event.getPlayer().openInventory(servers);
@@ -525,14 +559,17 @@ public class ServerSelectionHandler implements Listener {
 		}
 	}
 	
+	/** Runs when the player drops an item.
+	 *  Prevents the serverSelector from being dropped.
+	 */
 	@EventHandler
 	public void onPlayerThrowItemEvent(PlayerDropItemEvent event) {
 		if (event.getItemDrop().getItemStack().equals(serverSelector)) { 
 		  event.setCancelled(true);
-		  Bukkit.broadcastMessage("Cancelled");
 		}
 	}
 
+	/** Updates the Lore of items and also requests the player count of a specified server.*/
 	public static void updatePlaceHolders(Player player) {
 		for (ServerTP server : ConfigLoader.servers.values()) {
 			
@@ -559,8 +596,8 @@ public class ServerSelectionHandler implements Listener {
 		
 	}
 	
+	/** Sends Bungeecord a request to get the playercount of a specific server*/
 	public static void requestPlayerCount(String serverName, Player player) {
-		Bukkit.getServer().getLogger().info("Getting Player Count");
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		
 		try {
@@ -575,6 +612,7 @@ public class ServerSelectionHandler implements Listener {
 		
 	}
 	
+	/** Gets a loaded server item from the name of the server*/
 	public static ItemStack getServerItemFromName(String name) {
 		for (ItemStack item : serverItems.keySet()) {
 			if (serverItems.get(item).getServer().equals(name)) {
@@ -584,6 +622,7 @@ public class ServerSelectionHandler implements Listener {
 		return null;
 	}
 	
+	/** Gets the ServerTP object from the name of the server*/
 	public static ServerTP getServerFromName(String name) {
 		for (ServerTP server : serverItems.values()) {
 			if (server.getServer().equals(name)) {
@@ -591,5 +630,33 @@ public class ServerSelectionHandler implements Listener {
 			}
 		}
 		return null;
+	}
+	
+	/** Gets the Send generator for a server*/
+	public SendParticleGenerator getGenerator(Player player, ServerTP server) {
+		
+		switch(server.getSend()) {
+			case SPIRAL:
+				return new Spiral(player, server);
+			case NETHER_PORTAL:
+				return new NetherPortal(player, server);
+			default:
+				Bukkit.getServer().getLogger().severe("Couldn't determin matching ValidSendGenerators. Contact Developer!");
+				return new Spiral(player, server);
+		}
+	}
+	
+	/** Gets the Receive generator for a warp*/
+	public SendParticleGenerator getGenerator(Player player, WarpTP warp) {
+		
+		switch(warp.getSend()) {
+			case SPIRAL:
+				return new Spiral(player, warp);
+			case NETHER_PORTAL:
+				return new NetherPortal(player, warp);
+			default:
+				Bukkit.getServer().getLogger().severe("Couldn't determine matching ValidSendGenerators. Contact Developer!");
+				return new Spiral(player, warp);
+		}
 	}
 }
