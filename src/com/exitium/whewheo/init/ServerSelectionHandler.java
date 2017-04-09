@@ -251,6 +251,15 @@ public class ServerSelectionHandler implements Listener {
 		//Use to be Warps Inventory
 		if (Main.config.contains("warpMenu")) {
 			if (Main.config.getConfigurationSection("warpMenu").contains("size") && Main.config.getConfigurationSection("warpMenu").contains("name")) {
+				
+				int size = Main.config.getInt("serverMenu.size");
+				if (size >= 54) {
+					warps = Bukkit.createInventory(null, 54, ConfigLoader.getColoredTextFromConfig("warpMenu.name"));
+				}else{
+					warps = Bukkit.createInventory(null, size + 9, ConfigLoader.getColoredTextFromConfig("warpMenu.name"));
+				}
+				
+				
 				warps = Bukkit.createInventory(null, Main.config.getInt("warpMenu.size"), ConfigLoader.getColoredTextFromConfig("warpMenu.name"));
 				
 				for (WarpTP warp : ConfigLoader.warps.values()) {
@@ -336,6 +345,7 @@ public class ServerSelectionHandler implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		
+		
 		if (Main.serverName == null) {
 
 			ServerNameGetter sng = new ServerNameGetter(event.getPlayer());
@@ -343,55 +353,59 @@ public class ServerSelectionHandler implements Listener {
 			sng.setThreadId(threadId);
 		}
 		
-		
+		if (serverSelector != null) {
 		
 		if (Main.config.contains("serverSelector")) {
-			
-			if (Main.config.getConfigurationSection("serverSelector").contains("itemOnJoin") && 
-				Main.config.getConfigurationSection("serverSelector").contains("slot")) {
 				
-				if (Main.config.getBoolean("serverSelector.itemOnJoin")) {
-					//Config Checks
+				if (Main.config.getConfigurationSection("serverSelector").contains("itemOnJoin") && 
+					Main.config.getConfigurationSection("serverSelector").contains("slot")) {
 					
-					
-					if (!event.getPlayer().getInventory().contains(serverSelector)) { //If the player doesn't have the serverSelector Item already
+					if (Main.config.getBoolean("serverSelector.itemOnJoin")) {
+						//Config Checks
 						
 						
-						Inventory pInv = event.getPlayer().getInventory();
-						int slot = Main.config.getInt("serverSelector.slot");
-						ItemStack itemInSlot = pInv.getItem(slot);
-						
-						
-						if (itemInSlot != null) {
-							if (pInv.firstEmpty() == -1) {
-//								//Player's Inventory is Full. Drop the other item.
-//								pInv.setItem(slot, serverSelector);
-//								event.getPlayer().getLocation().getWorld().dropItem(event.getPlayer().getLocation(), itemInSlot);
+						if (!event.getPlayer().getInventory().contains(serverSelector)) { //If the player doesn't have the serverSelector Item already
+							
+							
+							Inventory pInv = event.getPlayer().getInventory();
+							int slot = Main.config.getInt("serverSelector.slot");
+							ItemStack itemInSlot = pInv.getItem(slot);
+							
+							
+							if (itemInSlot != null) {
+								if (pInv.firstEmpty() == -1) {
+	//								//Player's Inventory is Full. Drop the other item.
+	//								pInv.setItem(slot, serverSelector);
+	//								event.getPlayer().getLocation().getWorld().dropItem(event.getPlayer().getLocation(), itemInSlot);
+									
+									
+									
+									//Perhaps instead just ignore people with full inventories, They probably should already have a compass. This will probably only happen 
+									//if someone /clear 's their inventory, and if so they're probably admin and know how to get the compass back.
+								}else{
+									//Player's Inventory is not Full. Put the item in their inventory in the open slot and put the server selector in the appropriate slot.
+	
+									
+									pInv.setItem(pInv.firstEmpty(), itemInSlot);
+									
+									pInv.setItem(slot, serverSelector);
+								}
 								
 								
-								
-								//Perhaps instead just ignore people with full inventories, They probably should already have a compass. This will probably only happen 
-								//if someone /clear 's their inventory, and if so they're probably admin and know how to get the compass back.
 							}else{
-								//Player's Inventory is not Full. Put the item in their inventory in the open slot and put the server selector in the appropriate slot.
-
-								
-								pInv.setItem(pInv.firstEmpty(), itemInSlot);
-								
 								pInv.setItem(slot, serverSelector);
 							}
-							
-							
-						}else{
-							pInv.setItem(slot, serverSelector);
 						}
 					}
+				}else{
+					Bukkit.getServer().getLogger().severe("Couldn't find itemOnJoin or slot options for serverSelector in config!");
 				}
 			}else{
-				Bukkit.getServer().getLogger().severe("Couldn't find itemOnJoin or slot options for serverSelector in config!");
+				Bukkit.getServer().getLogger().severe("Couldn't find serverSelector");
 			}
+			
 		}else{
-			Bukkit.getServer().getLogger().severe("Couldn't find serverSelector");
+			Bukkit.getServer().getLogger().severe("There was an error initializing the server selector item. Couldn't give to a player");
 		}
 	}
 	
@@ -408,20 +422,60 @@ public class ServerSelectionHandler implements Listener {
 			
 			event.setCancelled(true);
 			if (event.getCurrentItem() != null) {
-				if (event.getCurrentItem().equals(warpSelector)) {
-					((Player) event.getWhoClicked()).openInventory(warps);
-				}else if (event.getCurrentItem().equals(serverSelector)) {
-					((Player) event.getWhoClicked()).openInventory(servers);
-				}else if (serverItems.containsKey(event.getCurrentItem())) {
+				if (serverSelector != null && warpSelector != null) {
 					
-					ServerTP server = serverItems.get(event.getCurrentItem());
-					
-					
-					if (!server.getServer().equals(Main.serverName)) {
+					if (event.getCurrentItem().equals(warpSelector)) {
+						((Player) event.getWhoClicked()).openInventory(warps);
+					}else if (event.getCurrentItem().equals(serverSelector)) {
+						((Player) event.getWhoClicked()).openInventory(servers);
+					}else if (serverItems.containsKey(event.getCurrentItem())) {
 						
-							if (server.getCommands() != null) {
-								if (server.getCommands().isEmpty() == false) {
-									for (String command : server.getCommands()) {
+						ServerTP server = serverItems.get(event.getCurrentItem());
+						
+						
+						if (!server.getServer().equals(Main.serverName)) {
+							
+								if (server.getCommands() != null) {
+									if (server.getCommands().isEmpty() == false) {
+										for (String command : server.getCommands()) {
+											if (command.contains("%player")) {
+												command = command.replace("%player%", player.getName());
+											}
+											
+											if (command.startsWith("p:")) {
+												command = command.substring(2);
+												Bukkit.getServer().dispatchCommand(player, command);
+											}else if (command.startsWith("s:")) {
+												command = command.substring(2);
+												Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+											}else{
+												Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+											}
+										}
+									}
+								}
+							
+							
+							teleportingPlayers.add(player.getUniqueId().toString());
+							
+							player.closeInventory();
+							
+	//						new Spiral(player, server).runTaskTimer(Main.instance, 0, 1);
+							ParticleGenerator generator = getGenerator(player, server);
+							
+							generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
+							
+						}else{
+							player.sendMessage(Main.prefix + Main.msg("alreadyConnected"));
+						}
+					}else if (warpItems.containsKey(event.getCurrentItem())) {
+						WarpTP warp = warpItems.get(event.getCurrentItem());
+						if (warp.getCommands() != null) {
+							if (warp.getCommands().isEmpty() == false) {
+								for (String command : warp.getCommands()) {
+									if (!command.equals("")) {
+										
+										
 										if (command.contains("%player")) {
 											command = command.replace("%player%", player.getName());
 										}
@@ -438,55 +492,20 @@ public class ServerSelectionHandler implements Listener {
 									}
 								}
 							}
-						
+						}
 						
 						teleportingPlayers.add(player.getUniqueId().toString());
 						
 						player.closeInventory();
 						
-//						new Spiral(player, server).runTaskTimer(Main.instance, 0, 1);
-						ParticleGenerator generator = getGenerator(player, server);
+						
+						//TODO: Handle Delays to make it work right
+						ParticleGenerator generator = getGenerator(player, warp);
 						
 						generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
-						
-					}else{
-						player.sendMessage(Main.prefix + Main.msg("alreadyConnected"));
 					}
-				}else if (warpItems.containsKey(event.getCurrentItem())) {
-					WarpTP warp = warpItems.get(event.getCurrentItem());
-					if (warp.getCommands() != null) {
-						if (warp.getCommands().isEmpty() == false) {
-							for (String command : warp.getCommands()) {
-								if (!command.equals("")) {
-									
-									
-									if (command.contains("%player")) {
-										command = command.replace("%player%", player.getName());
-									}
-									
-									if (command.startsWith("p:")) {
-										command = command.substring(2);
-										Bukkit.getServer().dispatchCommand(player, command);
-									}else if (command.startsWith("s:")) {
-										command = command.substring(2);
-										Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-									}else{
-										Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-									}
-								}
-							}
-						}
-					}
-					
-					teleportingPlayers.add(player.getUniqueId().toString());
-					
-					player.closeInventory();
-					
-					
-					//TODO: Handle Delays to make it work right
-					ParticleGenerator generator = getGenerator(player, warp);
-					
-					generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
+				}else{
+					Bukkit.getServer().getLogger().severe("ServerSelector or WarpSelector was not properly initiated.");
 				}
 			}
 		}else{
@@ -515,46 +534,50 @@ public class ServerSelectionHandler implements Listener {
 	@EventHandler
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		if (event.getItem() != null) {
-			if (event.getItem().equals(serverSelector)) {
-				
-
-				
-				Action action = event.getAction();
-				
-				
-				if(Main.config.contains("serverSelector")) {
-					if (Main.config.getConfigurationSection("serverSelector").contains("rightClick") &&
-							Main.config.getConfigurationSection("serverSelector").contains("leftClick")) {
-						
-						if (Main.config.getBoolean("serverSelector.rightClick")) {
-							if (action.equals(Action.RIGHT_CLICK_AIR) || action.equals(Action.RIGHT_CLICK_BLOCK)) {
-								event.setCancelled(true);
-								
-								updatePlaceHolders(event.getPlayer());
-								
-								event.getPlayer().openInventory(servers);
+			if (serverSelector != null) {
+				if (event.getItem().equals(serverSelector)) {
+					
+	
+					
+					Action action = event.getAction();
+					
+					
+					if(Main.config.contains("serverSelector")) {
+						if (Main.config.getConfigurationSection("serverSelector").contains("rightClick") &&
+								Main.config.getConfigurationSection("serverSelector").contains("leftClick")) {
+							
+							if (Main.config.getBoolean("serverSelector.rightClick")) {
+								if (action.equals(Action.RIGHT_CLICK_AIR) || action.equals(Action.RIGHT_CLICK_BLOCK)) {
+									event.setCancelled(true);
+									
+									updatePlaceHolders(event.getPlayer());
+									
+									event.getPlayer().openInventory(servers);
+								}
 							}
-						}
-						
-						if (Main.config.getBoolean("serverSelector.leftClick")) {
-							if (action.equals(Action.LEFT_CLICK_AIR) || action.equals(Action.LEFT_CLICK_BLOCK)) {
-								event.setCancelled(true);								
-								updatePlaceHolders(event.getPlayer());
-								
-								event.getPlayer().openInventory(servers);
+							
+							if (Main.config.getBoolean("serverSelector.leftClick")) {
+								if (action.equals(Action.LEFT_CLICK_AIR) || action.equals(Action.LEFT_CLICK_BLOCK)) {
+									event.setCancelled(true);								
+									updatePlaceHolders(event.getPlayer());
+									
+									event.getPlayer().openInventory(servers);
+								}
 							}
+							
+							
+							
+						}else{
+							Bukkit.getServer().getLogger().severe("Couldn't find right or left click option in config for serverSelector");
 						}
-						
-						
 						
 					}else{
-						Bukkit.getServer().getLogger().severe("Couldn't find right or left click option in config for serverSelector");
+						Bukkit.getServer().getLogger().severe("Couldn't find serverSelector in config!");
 					}
-					
-				}else{
-					Bukkit.getServer().getLogger().severe("Couldn't find serverSelector in config!");
+	
 				}
-
+			}else{
+				Bukkit.getServer().getLogger().severe("There was an error initializing the server selector item. Run Interact Event");
 			}
 		}
 	}

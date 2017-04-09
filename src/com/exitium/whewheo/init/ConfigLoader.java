@@ -136,7 +136,6 @@ public class ConfigLoader {
 					ServerTP server = new ServerTP(id, name, serverName, slot, material, realEnchantment, quantity, lore, enableCommands, commands, validSendGenerator, validReceiveGenerator);
 					
 					servers.put(name, server);
-					Bukkit.getServer().getLogger().info("Successfully loaded: " + id + ". Name: " + name);
 					
 				}else{
 					Bukkit.getServer().getLogger().severe("Couldn't load server " + key + ". Doesn't contain all required fields. Skipping...");

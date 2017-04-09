@@ -120,9 +120,37 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		saveConfig();
 		
 		//Initiate and copy menu file.
+		
 		menuFile = new File(getDataFolder(), "menu.yml");
+
+		if (!menuFile.exists()) {
+			saveResource("menu.yml", false);
+		}
+		
 		menuConfig = YamlConfiguration.loadConfiguration(menuFile);
+		
+		menuConfig.options().copyDefaults(true);
 		saveMenuConfig();
+		
+//		if(!menuFile.exists()) {
+//            try {
+//                menuConfig = YamlConfiguration.loadConfiguration(menuFile);
+//                menuConfig.options().copyDefaults(true);
+//                menuConfig.save(menuFile);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }else{
+//        	Bukkit.getServer().getLogger().info("MENUFILE EXSISTS");
+//        }
+		
+		
+		
+//		
+//		menuConfig.options().copyDefaults(true);
+//		saveMenuConfig();
+		
+//		Files.copy(from, to);
 	}
 
 	/** Attempts to save the config. If unsuccessful, it prints an error message.*/
