@@ -1,15 +1,20 @@
 package com.exitium.whewheo;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -22,7 +27,15 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import com.exitium.whewheo.commands.Commands;
 import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.init.ServerSelectionHandler;
-import com.exitium.whewheo.teleportobjects.ServerTP;
+import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
+import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
+import com.exitium.whewheo.particles.receive.generators.Emerald;
+import com.exitium.whewheo.particles.receive.generators.FireExplosion;
+import com.exitium.whewheo.particles.send.SendParticleGenerator;
+import com.exitium.whewheo.particles.send.ValidSendGenerators;
+import com.exitium.whewheo.particles.send.generators.NetherPortal;
+import com.exitium.whewheo.particles.send.generators.Spiral;
+import com.exitium.whewheo.teleportobjects.WarpTP;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -50,6 +63,8 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 	//Server name returned by Bungeecord's Proxy.
 	public static String serverName;
 	
+	public static HashMap<String, String> receivedPlayers;
+	
 	//Public static instance of the Main class for easier access.
 	public static Main instance;
 	
@@ -74,6 +89,8 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		//Sets the public static instance of Main to this instance.
 		instance = this;
 		
+		receivedPlayers = new HashMap<String, String>();
+		
 		//Initiates the config variables and copies the files if none exist.
 		initiateConfigFiles();
 		
@@ -89,7 +106,7 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		
 		//Register Outgoing and Incoming Plugin Channel for BungeeCord to request the server name and player count.
 		Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(Main.instance, "BungeeCord", Main.instance);
+		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
 		
 		//Instantiates a new Config Loader to store information from the config
 		ConfigLoader loader = new ConfigLoader();
@@ -228,26 +245,30 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 			
 			serverName = servername;
 		} else if (subchannel.equals("PlayerCount")) {
+			int playerCount = 0;
+			try {
+				String serverName = in.readUTF(); // Name of server, as given in the arguments
+			}catch (Exception e) {
+				Bukkit.getServer().getLogger().severe("Invalid Server Name!");
+				playerCount = 0;
+			}
 			
-			String serverName = in.readUTF(); // Name of server, as given in the arguments
-			int playerCount = in.readInt();
+			WarpTP warp = ServerSelectionHandler.getWarpFromName(serverName);
 			
-			ServerTP server = ServerSelectionHandler.getServerFromName(serverName);
-			
-			ItemStack serverItem = ServerSelectionHandler.getServerItemFromName(serverName);
+			ItemStack warpItem = ServerSelectionHandler.getWarpItemFromName(serverName);
 //			
-			ItemMeta serverItemMeta = serverItem.getItemMeta();
-			if (server.getName().contains("&")) {
-				serverItemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', server.getName()));
+			ItemMeta warpItemMeta = warpItem.getItemMeta();
+			if (warp.getName().contains("&")) {
+				warpItemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', warp.getName()));
 			}else{
-				serverItemMeta.setDisplayName(server.getName());
+				warpItemMeta.setDisplayName(warp.getName());
 			}
 			
 //			TODO: Implement Place Holders: %count%
 			
-			serverItemMeta.setLore(server.getLore());
+			warpItemMeta.setLore(warp.getLore());
 			List<String> lore = new ArrayList<String>();
-			for (String l : serverItemMeta.getLore()) {
+			for (String l : warpItemMeta.getLore()) {
 				if (l.contains("&")) {
 					lore.add(ChatColor.translateAlternateColorCodes('&', l).replace("%count%", playerCount + ""));
 				}else{
@@ -261,18 +282,151 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 //			
 //			
 			if (!lore.equals(Arrays.asList(""))) {
-				serverItemMeta.setLore(lore);
+				warpItemMeta.setLore(lore);
 			}
 //			
-			if (server.getEnchantment() != null)
-			serverItemMeta.addEnchant(server.getEnchantment(), 1, false);
-			serverItem.setItemMeta(serverItemMeta);
+			if (warp.getEnchantment() != null)
+			warpItemMeta.addEnchant(warp.getEnchantment(), 1, false);
+			warpItem.setItemMeta(warpItemMeta);
 			
 			
 			
-			ServerSelectionHandler.serverItems.put(serverItem, server);
+			ServerSelectionHandler.warpItems.put(warpItem, warp);
 			
-			ServerSelectionHandler.servers.setItem(server.getSlot(), serverItem);
+			ServerSelectionHandler.warps.setItem(warp.getSlot(), warpItem);
+			
+		}else if (subchannel.equalsIgnoreCase("Whewheo")) {
+			
+			Bukkit.getServer().getLogger().info("RECEIVED PLAYER'S INFORMATION");
+			
+			short len = in.readShort();
+			byte[] msgbytes = new byte[len];
+			in.readFully(msgbytes);
+
+			DataInputStream msgin = new DataInputStream(new ByteArrayInputStream(msgbytes));
+			try {
+				
+				//msgout.writeUTF(player.getUniqueId().toString() + ":" + loc.getWorld().getName() + ":" + loc.getBlockX() + ":" + loc.getBlockY() + ":" + loc.getBlockZ() + ":" + generator.name()); // You can do anything you want with msgout
+				
+				
+				//msgout.writeUTF(player.getUniqueId().toString() + ":" + generator.name()); // You can do anything you want with msgout
+				
+				String locationInformation = msgin.readUTF();
+				
+				String[] splitter = locationInformation.split(":");
+				
+				Player targetPlayer = Bukkit.getPlayer(UUID.fromString(splitter[0]));
+				
+				boolean online = targetPlayer != null;
+				
+				Bukkit.broadcastMessage("Player Online: " + online);
+				
+				if (splitter.length == 6) {
+
+					String playerUUID = splitter[0];
+					String worldName = splitter[1];
+					
+					int x = 0, y = 0, z = 0;
+					
+					try {
+						x = Integer.parseInt(splitter[2]);
+						y = Integer.parseInt(splitter[3]);
+						z = Integer.parseInt(splitter[4]);
+					}catch (Exception e) {
+						Bukkit.getServer().getLogger().severe("Couldn't correctly parse location information from Player Location Message. Contact developre");
+					}
+					
+					
+					World targetWorld = Bukkit.getWorld(worldName);
+					if (targetWorld == null) {
+						Bukkit.getServer().getLogger().severe("Couldn't find target world: " + worldName + "! Please update menu.yml's of other servers.");
+					}
+					
+					
+					String generatorName = splitter[5];
+					
+					if (!online) {
+						receivedPlayers.put(playerUUID, worldName + ":" + x + ":" + y + ":" + z + ":" + generatorName);
+					}else{
+						
+						Bukkit.broadcastMessage("Location:");
+						Bukkit.broadcastMessage("  world:" + worldName);
+						Bukkit.broadcastMessage("  x:" + x);
+						Bukkit.broadcastMessage("  y:" + y);
+						Bukkit.broadcastMessage("  z:" + z);
+						
+						Location targetLocation = new Location(targetWorld, x, y, z);
+						
+						Main.centeredTP(targetPlayer, targetLocation);
+						
+						ValidReceiveGenerators generator =  null;
+						
+						try {
+							generator = ValidReceiveGenerators.valueOf(generatorName);
+						}catch (Exception e) {
+							Bukkit.getServer().getLogger().severe("Couldn't match generator  name: " + generatorName + " to any valid receive generators");
+							return;
+						}
+						
+						ReceiveParticleGenerator receiveParticleGenerator = Main.getReceiveGeneratorFromEnum(generator, targetPlayer);
+						
+						receiveParticleGenerator.runTaskTimer(Main.instance, 0, receiveParticleGenerator.getTickDelay());
+					}
+					
+					
+				}else if (splitter.length == 2){
+					String playerUUID = splitter[0];
+					String generatorName = splitter[1];
+					
+					if (!online) {
+						receivedPlayers.put(playerUUID, generatorName);
+					}else{
+						
+						ValidReceiveGenerators generator =  null;
+						
+						try {
+							generator = ValidReceiveGenerators.valueOf(generatorName);
+						}catch (Exception e) {
+							Bukkit.getServer().getLogger().severe("Couldn't match generator  name: " + generatorName + " to any valid receive generators");
+							return;
+						}
+						
+						ReceiveParticleGenerator receiveParticleGenerator = Main.getReceiveGeneratorFromEnum(generator, targetPlayer);
+						
+						receiveParticleGenerator.runTaskTimer(Main.instance, 0, receiveParticleGenerator.getTickDelay());
+					}
+					
+					
+				}else{
+					Bukkit.getServer().getLogger().severe("Couldn't determine message values. Please contact developer.");
+				}
+				
+				
+				
+				
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} // Read the data in the same way you wrote it
+		}else if (subchannel.equals("WhewheoReceived")) {
+			
+			short len = in.readShort();
+			byte[] msgbytes = new byte[len];
+			in.readFully(msgbytes);
+
+			DataInputStream msgin = new DataInputStream(new ByteArrayInputStream(msgbytes));
+			try {
+				
+				String playerUUID = msgin.readUTF();
+				
+				if (receivedPlayers.containsKey(playerUUID)) {
+					receivedPlayers.remove(playerUUID);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} // Read the data in the same way you wrote it
 			
 		}
 	}
@@ -289,5 +443,35 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 			Bukkit.getLogger().severe("Couldn't find \"messages\" in config");
 		}
 		return "";
+	}
+	
+	
+	
+	
+	
+	
+	
+	public static SendParticleGenerator getSendGeneratorFromEnum(ValidSendGenerators generator, Player player, WarpTP warp) {
+		switch(generator) {
+			case SPIRAL:
+				return new Spiral(player, warp);
+			case NETHER_PORTAL:
+				return new NetherPortal(player, warp);
+			default:
+				Bukkit.getServer().getLogger().severe("Couldn't determine matching ValidSendGenerators. Contact Developer!");
+				return new Spiral(player, warp);
+		}
+	}
+	
+	public static ReceiveParticleGenerator getReceiveGeneratorFromEnum(ValidReceiveGenerators generator, Player player) {
+		switch(generator) {
+			case EMERALD:
+				return new Emerald(player);
+			case FIRE_EXPLOSION:
+				return new FireExplosion(player);
+			default:
+				Bukkit.getServer().getLogger().severe("Couldn't determine matching ValidReceiveGenerators. Contact Developer!");
+				return new Emerald(player);
+		}
 	}
 }

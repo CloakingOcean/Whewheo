@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,10 +24,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.exitium.whewheo.Main;
 import com.exitium.whewheo.particles.ParticleGenerator;
-import com.exitium.whewheo.particles.send.SendParticleGenerator;
-import com.exitium.whewheo.particles.send.generators.NetherPortal;
-import com.exitium.whewheo.particles.send.generators.Spiral;
-import com.exitium.whewheo.teleportobjects.ServerTP;
+import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
+import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
 import com.exitium.whewheo.teleportobjects.WarpTP;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -46,24 +45,17 @@ public class ServerSelectionHandler implements Listener {
 	/*
 	 * TODO: PERHAPS MOVE ALL UNRELATED LISTENRS TO A SEPARATE CLASS FOR ORGANIZATIONAL PURPOSES.
 	 */
-
-	private static ItemStack bluePanel;
 	
-	public static Inventory servers;
+	public static Inventory warps;
 	//Items
 		private static ItemStack warpSelector;
-	
-	private static Inventory warps;
-	//Items
-		private static ItemStack serverSelector;
 	
 	
 
 		
 		
 	// Links the itemstack to the server name
-	public static HashMap<ItemStack, ServerTP> serverItems;
-	private static HashMap<ItemStack, WarpTP> warpItems;
+	public static HashMap<ItemStack, WarpTP> warpItems;
 	
 	
 	public static List<String> teleportingPlayers;
@@ -78,7 +70,6 @@ public class ServerSelectionHandler implements Listener {
 	
 	/** Initializes the components for the ServerSelectionHandler class*/
 	public static void init() {
-		serverItems = new HashMap<ItemStack, ServerTP>();
 		warpItems = new HashMap<ItemStack, WarpTP>();
 		
 		teleportingPlayers = new ArrayList<String>();
@@ -89,44 +80,6 @@ public class ServerSelectionHandler implements Listener {
 	
 	/** Creates items from the loaded warps and servers objects*/
 	public static void setupItems() {
-		if (Main.config.contains("serverSelector")) {
-			if (Main.config.getConfigurationSection("serverSelector").contains("name") 
-					&& Main.config.getConfigurationSection("serverSelector").contains("material")
-					&& Main.config.getConfigurationSection("serverSelector").contains("enchantment")
-					&& Main.config.getConfigurationSection("serverSelector").contains("quantity")
-					&& Main.config.getConfigurationSection("serverSelector").contains("lore")) {
-				
-				
-				serverSelector = ConfigLoader.getItemStackFromId(Main.config.getString("serverSelector.material"), Main.config.getInt("serverSelector.quantity"));
-				ItemMeta serverSelectorMeta = serverSelector.getItemMeta();
-				serverSelectorMeta.setDisplayName(ConfigLoader.getColoredTextFromConfig("serverSelector.name"));
-				if (!Main.config.getString("serverSelector.enchantment").equals("null"))
-				serverSelectorMeta.addEnchant(Enchantment.getByName(Main.config.getString("serverSelector.enchantment")), 1, false);
-//				serverSelectorMeta.setLore(Main.config.getStringList("serverSelector.lore"));
-				
-				List<String> lore = new ArrayList<String>();
-				for (String l: Main.config.getStringList("serverSelector.lore")) {
-					if (l.contains("&")) {
-						lore.add(ChatColor.translateAlternateColorCodes('&', l));
-					}else{
-						lore.add(l);
-					}
-				}
-				
-				if (!lore.equals(Arrays.asList(""))) {
-					serverSelectorMeta.setLore(lore);
-				}
-				
-				serverSelector.setItemMeta(serverSelectorMeta);
-				
-				
-			}else{
-				Bukkit.getServer().getLogger().severe("Couldn't load Server Selector. Missing Requirments");
-			}
-		}else{
-			Bukkit.getServer().getLogger().severe("Couldn't load Server Selector. No serverSelector section found");
-		}
-		
 		if (Main.config.contains("warpSelector")) {
 			if (Main.config.getConfigurationSection("warpSelector").contains("name") 
 					&& Main.config.getConfigurationSection("warpSelector").contains("material")
@@ -134,13 +87,14 @@ public class ServerSelectionHandler implements Listener {
 					&& Main.config.getConfigurationSection("warpSelector").contains("quantity")
 					&& Main.config.getConfigurationSection("warpSelector").contains("lore")) {
 				
+				
 				warpSelector = ConfigLoader.getItemStackFromId(Main.config.getString("warpSelector.material"), Main.config.getInt("warpSelector.quantity"));
 				ItemMeta warpSelectorMeta = warpSelector.getItemMeta();
 				warpSelectorMeta.setDisplayName(ConfigLoader.getColoredTextFromConfig("warpSelector.name"));
 				if (!Main.config.getString("warpSelector.enchantment").equals("null"))
 				warpSelectorMeta.addEnchant(Enchantment.getByName(Main.config.getString("warpSelector.enchantment")), 1, false);
 //				warpSelectorMeta.setLore(Main.config.getStringList("warpSelector.lore"));
-
+				
 				List<String> lore = new ArrayList<String>();
 				for (String l: Main.config.getStringList("warpSelector.lore")) {
 					if (l.contains("&")) {
@@ -155,48 +109,44 @@ public class ServerSelectionHandler implements Listener {
 				}
 				
 				warpSelector.setItemMeta(warpSelectorMeta);
+				
+				
+			}else{
+				Bukkit.getServer().getLogger().severe("Couldn't load Warp Selector. Missing Requirments");
 			}
 		}else{
-			Bukkit.getServer().getLogger().severe("Couldn't load Server Selector. No serverSelector section found");
+			Bukkit.getServer().getLogger().severe("Couldn't load Warp Selector. No serverSelector section found");
 		}
-		
-		bluePanel = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 11);
-		ItemMeta bluePanelMeta = bluePanel.getItemMeta();
-		bluePanelMeta.setDisplayName(" ");
-		bluePanel.setItemMeta(bluePanelMeta);
 	}
 	
-	/** Loads the created warps and servers items into the appropriate inventories*/
+	/** Loads the created warps items into the appropriate inventories*/
 	public static void setupInventories() {
 		
-		if (Main.config.contains("serverMenu")) {
-			if (Main.config.getConfigurationSection("serverMenu").contains("size") && Main.config.getConfigurationSection("serverMenu").contains("name")) {
-				int size = Main.config.getInt("serverMenu.size");
-				if (size >= 54) {
-					servers = Bukkit.createInventory(null, 54, ConfigLoader.getColoredTextFromConfig("serverMenu.name"));
-				}else{
-					servers = Bukkit.createInventory(null, size + 9, ConfigLoader.getColoredTextFromConfig("serverMenu.name"));
-				}
+		if (Main.config.contains("warpMenu")) {
+			if (Main.config.getConfigurationSection("warpMenu").contains("size") && Main.config.getConfigurationSection("warpMenu").contains("name")) {
+				int size = Main.config.getInt("warpMenu.size");
+				if (size > 54) size = 54;
+				warps = Bukkit.createInventory(null, size, ConfigLoader.getColoredTextFromConfig("warpMenu.name"));
 				
 				
 				
 				
-				for (ServerTP server : ConfigLoader.servers.values()) {
+				for (WarpTP warp : ConfigLoader.warps.values()) {
 					
 					
-					ItemStack serverItem = ConfigLoader.getItemStackFromId(server.getMaterial(), server.getQuantity());
-					ItemMeta serverItemMeta = serverItem.getItemMeta();
-					if (server.getName().contains("&")) {
-						serverItemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', server.getName()));
+					ItemStack warpItem = ConfigLoader.getItemStackFromId(warp.getMaterial(), warp.getQuantity());
+					ItemMeta warpItemMeta = warpItem.getItemMeta();
+					if (warp.getName().contains("&")) {
+						warpItemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', warp.getName()));
 					}else{
-						serverItemMeta.setDisplayName(server.getName());
+						warpItemMeta.setDisplayName(warp.getName());
 					}
 					
 					//TODO: Implement Place Holders: %count%
 					
-//					serverItemMeta.setLore(server.getLore());
+//					warpItemMeta.setLore(warp.getLore());
 					List<String> lore = new ArrayList<String>();
-					for (String l : server.getLore()) {
+					for (String l : warp.getLore()) {
 						if (l.contains("&")) {
 							lore.add(ChatColor.translateAlternateColorCodes('&', l));
 						}else{
@@ -205,135 +155,32 @@ public class ServerSelectionHandler implements Listener {
 					}
 					
 					if (!lore.equals(Arrays.asList(""))) {
-						serverItemMeta.setLore(lore);
+						warpItemMeta.setLore(lore);
 					}
 					
-					if (server.getEnchantment() != null)
-					serverItemMeta.addEnchant(server.getEnchantment(), 1, false);
-					serverItem.setItemMeta(serverItemMeta);
+					if (warp.getEnchantment() != null)
+					warpItemMeta.addEnchant(warp.getEnchantment(), 1, false);
+					warpItem.setItemMeta(warpItemMeta);
 					
 					
 					
-					serverItems.put(serverItem, server);
+					warpItems.put(warpItem, warp);
 					
 					
 					
 					
 					
-					if (servers.getItem(server.getSlot()) != null) {
-						Bukkit.getServer().getLogger().severe("Overriding server itemstacks. Slot: " + server.getSlot() + ". Previous: " + servers.getItem(server.getSlot()).getType().name() + ". Now: " + serverItem.getType().name());
+					if (warps.getItem(warp.getSlot()) != null) {
+						Bukkit.getServer().getLogger().severe("Overriding warp itemstacks. Slot: " + warp.getSlot() + ". Previous: " + warps.getItem(warp.getSlot()).getType().name() + ". Now: " + warpItem.getType().name());
 					}
 					
-					servers.setItem(server.getSlot(), serverItem);
+					warps.setItem(warp.getSlot(), warpItem);
 					
 				}
-				
-				
-				
-				
-				
-				
-				
-				int lastIndex = (servers.getSize()-1);
-				
-				servers.setItem(lastIndex, warpSelector);
-				for (int i = 1; i < 9; i++) {
-					servers.setItem(lastIndex-i, bluePanel);
-				}
-				
-			}else{
-				Bukkit.getServer().getLogger().severe("Couldn't load Server Menu. No size or name found");
-			}
-		}else{
-			Bukkit.getServer().getLogger().severe("Couldn't load Server Menu. No serverMenu found");
-		}
-		
-		//Use to be Warps Inventory
-		if (Main.config.contains("warpMenu")) {
-			if (Main.config.getConfigurationSection("warpMenu").contains("size") && Main.config.getConfigurationSection("warpMenu").contains("name")) {
-				
-				int size = Main.config.getInt("serverMenu.size");
-				if (size >= 54) {
-					warps = Bukkit.createInventory(null, 54, ConfigLoader.getColoredTextFromConfig("warpMenu.name"));
-				}else{
-					warps = Bukkit.createInventory(null, size + 9, ConfigLoader.getColoredTextFromConfig("warpMenu.name"));
-				}
-				
-				
-				warps = Bukkit.createInventory(null, Main.config.getInt("warpMenu.size"), ConfigLoader.getColoredTextFromConfig("warpMenu.name"));
-				
-				for (WarpTP warp : ConfigLoader.warps.values()) {
-					
-					/*
-					 * Has been disabled because of the assumption that
-					 * each server has a config.yml specific to the warps needed.
-					 */
-//					if (warp.getServer().equals(Main.serverName)) { 
-						
-						ItemStack warpItem = ConfigLoader.getItemStackFromId(warp.getMaterial(), warp.getQuantity());
-						ItemMeta warpItemMeta = warpItem.getItemMeta();
-						if (warp.getName().contains("&")) {
-							warpItemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', warp.getName()));
-						}else{
-							warpItemMeta.setDisplayName(warp.getName());
-						}
-						
-	//					warpItemMeta.setLore(warp.getLore());
-						List<String> lore = new ArrayList<String>();
-						for (String l: warp.getLore()) {
-							if (l.contains("&")) {
-								lore.add(ChatColor.translateAlternateColorCodes('&', l));
-							}else{
-								lore.add(l);
-							}
-						}
-						if (!lore.equals(Arrays.asList(""))) {
-							warpItemMeta.setLore(lore);
-						}
-						
-						if (warp.getEnchantment() != null)
-						warpItemMeta.addEnchant(warp.getEnchantment(), 1, false);
-						warpItem.setItemMeta(warpItemMeta);
-						
-						
-						warpItems.put(warpItem, warp);
-						
-						
-						if (warps.getItem(warp.getSlot()) != null) {
-							Bukkit.getServer().getLogger().severe("Overriding warp itemstacks. Slot: " + warp.getSlot() + ". Previous: " + warps.getItem(warp.getSlot()).getType().name() + ". Now: " + warpItem.getType().name());
-						}
-						
-						warps.setItem(warp.getSlot(), warpItem);
-						
-//					}else{
-//						//Debugging Message
-//						Bukkit.getServer().getLogger().severe("Couldn't load warp configured for server: " + warp.getServer());
-//						Bukkit.getServer().getLogger().severe("Current Server: " + Main.serverName);
-//					}
-				}
-				
-				
-				
-				
-				
-				
-				
-				int lastIndex = (warps.getSize()-1);
-				
-				warps.setItem(lastIndex-8, serverSelector);
-				for (int i = 0; i < 8; i++) {
-					warps.setItem(lastIndex-i, bluePanel);
-				}
-				
-				
-				
-				
-				
-				
 			}else{
 				Bukkit.getServer().getLogger().severe("Couldn't load Warp Menu. No size or name found");
 			}
-		}else {
+		}else{
 			Bukkit.getServer().getLogger().severe("Couldn't load Warp Menu. No warpMenu found");
 		}
 	}
@@ -344,31 +191,95 @@ public class ServerSelectionHandler implements Listener {
 	 */
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
+		Bukkit.getServer().broadcastMessage("Player UUID: " + event.getPlayer().getUniqueId().toString());
+		for (String s : Main.receivedPlayers.keySet()) {
+			Bukkit.getServer().broadcastMessage("ReceivedPlayers Key: " + s);
+		}
 		
+		receivedPlayersIf: if (Main.receivedPlayers.containsKey(event.getPlayer().getUniqueId().toString())) {
+			//Sent from a Server with this plugin
+			Bukkit.getServer().getLogger().info("A ReceivedPlayer joined. Removing him from the list");
+			Main.receivedPlayers.remove(event.getPlayer().getUniqueId());
+			
+//			receivedPlayers.put(playerUUID, worldName + ":" + x + ":" + y + ":" + z + ":" + generatorName);
+			
+			if (Main.receivedPlayers.get(event.getPlayer().getUniqueId().toString()).contains(":")) {
+				
+				String[] splitter = Main.receivedPlayers.get(event.getPlayer().getUniqueId().toString()).split(":");
+				
+				String worldName = splitter[0];
+				int x = 0, y = 0, z = 0;
+				x = Integer.parseInt(splitter[1]);
+				y = Integer.parseInt(splitter[2]);
+				z = Integer.parseInt(splitter[3]);
+				
+				World targetWorld = Bukkit.getWorld(worldName);
+				if (targetWorld == null) {
+					Bukkit.getServer().getLogger().severe("Couldn't find target world: " + worldName + "! Please update menu.yml's of other servers.");
+					break receivedPlayersIf;
+				}
+				
+				
+				Location targetLocation = new Location(targetWorld, x, y, z);
+				
+				Main.centeredTP(event.getPlayer(), targetLocation);
+				
+				String generatorName = splitter[4];
+				
+				ValidReceiveGenerators generator =  null;
+				
+				try {
+					generator = ValidReceiveGenerators.valueOf(generatorName);
+				}catch (Exception e) {
+					Bukkit.getServer().getLogger().severe("Couldn't match generator  name: " + generatorName + " to any valid receive generators");
+					return;
+				}
+				
+				ReceiveParticleGenerator receiveParticleGenerator = Main.getReceiveGeneratorFromEnum(generator, event.getPlayer());
+				
+				receiveParticleGenerator.runTaskTimer(Main.instance, 0, receiveParticleGenerator.getTickDelay());
+			}else{
+				String generatorName = Main.receivedPlayers.get(event.getPlayer().getUniqueId().toString());
+				
+				ValidReceiveGenerators generator =  null;
+				
+				try {
+					generator = ValidReceiveGenerators.valueOf(generatorName);
+				}catch (Exception e) {
+					Bukkit.getServer().getLogger().severe("Couldn't match generator  name: " + generatorName + " to any valid receive generators");
+					return;
+				}
+				
+				ReceiveParticleGenerator receiveParticleGenerator = Main.getReceiveGeneratorFromEnum(generator, event.getPlayer());
+				
+				receiveParticleGenerator.runTaskTimer(Main.instance, 0, receiveParticleGenerator.getTickDelay());
+			}
+			
+		}
 		
-		if (Main.serverName == null) {
+		if (Main.serverName == null || Main.receivedPlayers.isEmpty() == false) {
 
 			ServerNameGetter sng = new ServerNameGetter(event.getPlayer());
 			int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, sng, (long) 0, (long) 1L);
 			sng.setThreadId(threadId);
 		}
 		
-		if (serverSelector != null) {
+		if (warpSelector != null) {
 		
-		if (Main.config.contains("serverSelector")) {
+		if (Main.config.contains("warpSelector")) {
 				
-				if (Main.config.getConfigurationSection("serverSelector").contains("itemOnJoin") && 
-					Main.config.getConfigurationSection("serverSelector").contains("slot")) {
+				if (Main.config.getConfigurationSection("warpSelector").contains("itemOnJoin") && 
+					Main.config.getConfigurationSection("warpSelector").contains("slot")) {
 					
-					if (Main.config.getBoolean("serverSelector.itemOnJoin")) {
+					if (Main.config.getBoolean("warpSelector.itemOnJoin")) {
 						//Config Checks
 						
 						
-						if (!event.getPlayer().getInventory().contains(serverSelector)) { //If the player doesn't have the serverSelector Item already
+						if (!event.getPlayer().getInventory().contains(warpSelector)) { //If the player doesn't have the serverSelector Item already
 							
 							
 							Inventory pInv = event.getPlayer().getInventory();
-							int slot = Main.config.getInt("serverSelector.slot");
+							int slot = Main.config.getInt("warpSelector.slot");
 							ItemStack itemInSlot = pInv.getItem(slot);
 							
 							
@@ -388,24 +299,24 @@ public class ServerSelectionHandler implements Listener {
 									
 									pInv.setItem(pInv.firstEmpty(), itemInSlot);
 									
-									pInv.setItem(slot, serverSelector);
+									pInv.setItem(slot, warpSelector);
 								}
 								
 								
 							}else{
-								pInv.setItem(slot, serverSelector);
+								pInv.setItem(slot, warpSelector);
 							}
 						}
 					}
 				}else{
-					Bukkit.getServer().getLogger().severe("Couldn't find itemOnJoin or slot options for serverSelector in config!");
+					Bukkit.getServer().getLogger().severe("Couldn't find itemOnJoin or slot options for warpSelector in config!");
 				}
 			}else{
-				Bukkit.getServer().getLogger().severe("Couldn't find serverSelector");
+				Bukkit.getServer().getLogger().severe("Couldn't find warpSelector");
 			}
 			
 		}else{
-			Bukkit.getServer().getLogger().severe("There was an error initializing the server selector item. Couldn't give to a player");
+			Bukkit.getServer().getLogger().severe("There was an error initializing the warp selector item. Couldn't give to a player");
 		}
 	}
 	
@@ -417,27 +328,25 @@ public class ServerSelectionHandler implements Listener {
 		
 		
 		Inventory inventory = event.getInventory();
-		if (inventory.equals(servers) || inventory.equals(warps)) {
+		if (inventory.equals(warps)) {
 			Player player = (Player) event.getWhoClicked();
 			
 			event.setCancelled(true);
 			if (event.getCurrentItem() != null) {
-				if (serverSelector != null && warpSelector != null) {
+				if (warpSelector != null) {
 					
 					if (event.getCurrentItem().equals(warpSelector)) {
 						((Player) event.getWhoClicked()).openInventory(warps);
-					}else if (event.getCurrentItem().equals(serverSelector)) {
-						((Player) event.getWhoClicked()).openInventory(servers);
-					}else if (serverItems.containsKey(event.getCurrentItem())) {
+					}else if (warpItems.containsKey(event.getCurrentItem())) {
 						
-						ServerTP server = serverItems.get(event.getCurrentItem());
+						WarpTP warp = warpItems.get(event.getCurrentItem());
 						
 						
-						if (!server.getServer().equals(Main.serverName)) {
+//						if (!warp.getServerName().equals(Main.serverName)) {
 							
-								if (server.getCommands() != null) {
-									if (server.getCommands().isEmpty() == false) {
-										for (String command : server.getCommands()) {
+								if (warp.getCommands() != null) {
+									if (warp.getCommands().isEmpty() == false) {
+										for (String command : warp.getCommands()) {
 											if (command.contains("%player")) {
 												command = command.replace("%player%", player.getName());
 											}
@@ -461,55 +370,20 @@ public class ServerSelectionHandler implements Listener {
 							player.closeInventory();
 							
 	//						new Spiral(player, server).runTaskTimer(Main.instance, 0, 1);
-							ParticleGenerator generator = getGenerator(player, server);
+							ParticleGenerator generator = Main.getSendGeneratorFromEnum(warp.getSend(), player, warp);
 							
 							generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
 							
-						}else{
-							player.sendMessage(Main.prefix + Main.msg("alreadyConnected"));
-						}
-					}else if (warpItems.containsKey(event.getCurrentItem())) {
-						WarpTP warp = warpItems.get(event.getCurrentItem());
-						if (warp.getCommands() != null) {
-							if (warp.getCommands().isEmpty() == false) {
-								for (String command : warp.getCommands()) {
-									if (!command.equals("")) {
-										
-										
-										if (command.contains("%player")) {
-											command = command.replace("%player%", player.getName());
-										}
-										
-										if (command.startsWith("p:")) {
-											command = command.substring(2);
-											Bukkit.getServer().dispatchCommand(player, command);
-										}else if (command.startsWith("s:")) {
-											command = command.substring(2);
-											Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-										}else{
-											Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-										}
-									}
-								}
-							}
-						}
-						
-						teleportingPlayers.add(player.getUniqueId().toString());
-						
-						player.closeInventory();
-						
-						
-						//TODO: Handle Delays to make it work right
-						ParticleGenerator generator = getGenerator(player, warp);
-						
-						generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
+//						}else{
+//							player.sendMessage(Main.prefix + Main.msg("alreadyConnected"));
+//						}
 					}
 				}else{
-					Bukkit.getServer().getLogger().severe("ServerSelector or WarpSelector was not properly initiated.");
+					Bukkit.getServer().getLogger().severe("WarpSelector was not properly initiated.");
 				}
 			}
 		}else{
-			if (event.getCurrentItem().equals(serverSelector)) {
+			if (event.getCurrentItem().equals(warpSelector)) {
 				event.setCancelled(true);
 			}
 		}
@@ -534,50 +408,50 @@ public class ServerSelectionHandler implements Listener {
 	@EventHandler
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		if (event.getItem() != null) {
-			if (serverSelector != null) {
-				if (event.getItem().equals(serverSelector)) {
+			if (warpSelector != null) {
+				if (event.getItem().equals(warpSelector)) {
 					
 	
 					
 					Action action = event.getAction();
 					
 					
-					if(Main.config.contains("serverSelector")) {
-						if (Main.config.getConfigurationSection("serverSelector").contains("rightClick") &&
-								Main.config.getConfigurationSection("serverSelector").contains("leftClick")) {
+					if(Main.config.contains("warpSelector")) {
+						if (Main.config.getConfigurationSection("warpSelector").contains("rightClick") &&
+								Main.config.getConfigurationSection("warpSelector").contains("leftClick")) {
 							
-							if (Main.config.getBoolean("serverSelector.rightClick")) {
+							if (Main.config.getBoolean("warpSelector.rightClick")) {
 								if (action.equals(Action.RIGHT_CLICK_AIR) || action.equals(Action.RIGHT_CLICK_BLOCK)) {
 									event.setCancelled(true);
 									
 									updatePlaceHolders(event.getPlayer());
 									
-									event.getPlayer().openInventory(servers);
+									event.getPlayer().openInventory(warps);
 								}
 							}
 							
-							if (Main.config.getBoolean("serverSelector.leftClick")) {
+							if (Main.config.getBoolean("warpSelector.leftClick")) {
 								if (action.equals(Action.LEFT_CLICK_AIR) || action.equals(Action.LEFT_CLICK_BLOCK)) {
 									event.setCancelled(true);								
 									updatePlaceHolders(event.getPlayer());
 									
-									event.getPlayer().openInventory(servers);
+									event.getPlayer().openInventory(warps);
 								}
 							}
 							
 							
 							
 						}else{
-							Bukkit.getServer().getLogger().severe("Couldn't find right or left click option in config for serverSelector");
+							Bukkit.getServer().getLogger().severe("Couldn't find right or left click option in config for warpSelector");
 						}
 						
 					}else{
-						Bukkit.getServer().getLogger().severe("Couldn't find serverSelector in config!");
+						Bukkit.getServer().getLogger().severe("Couldn't find warpSelector in config!");
 					}
 	
 				}
 			}else{
-				Bukkit.getServer().getLogger().severe("There was an error initializing the server selector item. Run Interact Event");
+				Bukkit.getServer().getLogger().severe("There was an error initializing the warp selector item. Run Interact Event");
 			}
 		}
 	}
@@ -587,18 +461,18 @@ public class ServerSelectionHandler implements Listener {
 	 */
 	@EventHandler
 	public void onPlayerThrowItemEvent(PlayerDropItemEvent event) {
-		if (event.getItemDrop().getItemStack().equals(serverSelector)) { 
+		if (event.getItemDrop().getItemStack().equals(warpSelector)) { 
 		  event.setCancelled(true);
 		}
 	}
 
 	/** Updates the Lore of items and also requests the player count of a specified server.*/
 	public static void updatePlaceHolders(Player player) {
-		for (ServerTP server : ConfigLoader.servers.values()) {
+		for (WarpTP warp : ConfigLoader.warps.values()) {
 			
 			boolean containsPlaceHolders = false;
 			
-			for (String s : server.getLore()) {
+			for (String s : warp.getLore()) {
 				if (s.contains("%count%") || s.contains("%player%")) {
 					containsPlaceHolders = true;
 				}
@@ -607,14 +481,14 @@ public class ServerSelectionHandler implements Listener {
 			if (containsPlaceHolders) {
 				List<String> temporaryLore = new ArrayList<String>();
 				
-				for (String lore : server.getLore()) {
+				for (String lore : warp.getLore()) {
 					temporaryLore.add(lore.replace("%player%", player.getName()));
 				}
 				
-				server.setLore(temporaryLore);
+				warp.setLore(temporaryLore);
 			}
 			
-			requestPlayerCount(server.getServer(), player);
+			requestPlayerCount(warp.getServerName(), player);
 		}
 		
 	}
@@ -636,9 +510,9 @@ public class ServerSelectionHandler implements Listener {
 	}
 	
 	/** Gets a loaded server item from the name of the server*/
-	public static ItemStack getServerItemFromName(String name) {
-		for (ItemStack item : serverItems.keySet()) {
-			if (serverItems.get(item).getServer().equals(name)) {
+	public static ItemStack getWarpItemFromName(String name) {
+		for (ItemStack item : warpItems.keySet()) {
+			if (warpItems.get(item).getServerName().equals(name)) {
 				return item;
 			}
 		}
@@ -646,40 +520,12 @@ public class ServerSelectionHandler implements Listener {
 	}
 	
 	/** Gets the ServerTP object from the name of the server*/
-	public static ServerTP getServerFromName(String name) {
-		for (ServerTP server : serverItems.values()) {
-			if (server.getServer().equals(name)) {
-				return server;
+	public static WarpTP getWarpFromName(String name) {
+		for (WarpTP warp : warpItems.values()) {
+			if (warp.getServerName().equals(name)) {
+				return warp;
 			}
 		}
 		return null;
-	}
-	
-	/** Gets the Send generator for a server*/
-	public SendParticleGenerator getGenerator(Player player, ServerTP server) {
-		
-		switch(server.getSend()) {
-			case SPIRAL:
-				return new Spiral(player, server);
-			case NETHER_PORTAL:
-				return new NetherPortal(player, server);
-			default:
-				Bukkit.getServer().getLogger().severe("Couldn't determin matching ValidSendGenerators. Contact Developer!");
-				return new Spiral(player, server);
-		}
-	}
-	
-	/** Gets the Receive generator for a warp*/
-	public SendParticleGenerator getGenerator(Player player, WarpTP warp) {
-		
-		switch(warp.getSend()) {
-			case SPIRAL:
-				return new Spiral(player, warp);
-			case NETHER_PORTAL:
-				return new NetherPortal(player, warp);
-			default:
-				Bukkit.getServer().getLogger().severe("Couldn't determine matching ValidSendGenerators. Contact Developer!");
-				return new Spiral(player, warp);
-		}
 	}
 }

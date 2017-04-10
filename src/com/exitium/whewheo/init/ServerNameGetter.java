@@ -1,5 +1,8 @@
 package com.exitium.whewheo.init;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -29,24 +32,61 @@ public class ServerNameGetter implements Runnable{
 		this.player = player;
 	}
 	
-	/** Continually checks for the player until they have actually joind the server. Once they have actually joined, it sends a BungeeRequest to get the server's name*/
+	/** Continually checks for the player until they have actually joinwd the server. Once they have actually joined, it sends a BungeeRequest to get the server's name*/
 	@Override
 	public void run() {
 		Bukkit.getServer().broadcastMessage("Running Thread");
 		if (threadId != 0) {
-			if (Main.serverName == null) {
+			if (Main.serverName == null || Main.receivedPlayers.isEmpty() == false) {
+				Bukkit.getServer().getLogger().severe("ServerName == null or Received Players is not empty.");
 				if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null) {
+	
+					
 					ByteArrayDataOutput out = ByteStreams.newDataOutput();
 					
 					try {
 						out.writeUTF("GetServer");
 					}catch(Exception e) {
+						Bukkit.getServer().getLogger().severe("Error occured while attempting get server name.");
 						e.printStackTrace();
 					}
 					
 					player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
-	
 					
+					
+					if (Main.receivedPlayers.containsKey(player.getUniqueId().toString())) {
+						out = ByteStreams.newDataOutput();
+						
+						Bukkit.getServer().getLogger().info("Sending Received Player Message");
+						
+						try {
+							out.writeUTF("Forward"); // So BungeeCord knows to forward it
+							out.writeUTF("ALL");
+							out.writeUTF("WhewheoReceived"); // The channel name to check if this your data
+
+							ByteArrayOutputStream msgbytes = new ByteArrayOutputStream();
+							DataOutputStream msgout = new DataOutputStream(msgbytes);
+							msgout.writeUTF(player.getUniqueId().toString()); // You can do anything you want with msgout
+
+							out.writeShort(msgbytes.toByteArray().length);
+							out.write(msgbytes.toByteArray());
+							
+						}catch (Exception e) {
+							Bukkit.getServer().getLogger().severe("Error occured while attempting to send player target location information.");
+							e.printStackTrace();
+						}
+						
+						player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
+					}else{
+						Bukkit.getServer().getLogger().info("Received Players doesn't contain player");
+						Bukkit.getServer().getLogger().info("Player UUID: " + player.getUniqueId().toString());
+						Bukkit.getServer().getLogger().info("Received Players: ");
+						for (String s : Main.receivedPlayers.keySet()) {
+							Bukkit.getServer().getLogger().info("  " + s);
+						}
+						Bukkit.getServer().getLogger().info("Is Empty: " + Main.receivedPlayers.isEmpty());
+					}
+					Bukkit.getServer().getScheduler().cancelTask(threadId);
 				}
 			}else{
 				Bukkit.getServer().getScheduler().cancelTask(threadId);

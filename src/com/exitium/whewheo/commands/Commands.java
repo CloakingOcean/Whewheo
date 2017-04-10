@@ -60,6 +60,11 @@ public class Commands implements CommandExecutor{
 					ServerSelectionHandler.init();
 					sender.sendMessage(Main.prefix  + Main.msg("reloadedConfig"));
 					return true;
+				}else if (args[0].equalsIgnoreCase("test")) {
+					sender.sendMessage("Sending received Players.");
+					for (String playerUUID : Main.receivedPlayers.keySet()) {
+						sender.sendMessage("Player: " + playerUUID);
+					}
 				}
 //				else if(args[0].equalsIgnoreCase("listwarps")) {
 //					if (ConfigLoader.warps != null) {
@@ -93,10 +98,29 @@ public class Commands implements CommandExecutor{
 						String warpName = args[1];
 						//Check to see if warp already exists
 						
+						if (ConfigLoader.warps.containsKey(warpName)) {
+							
+							sender.sendMessage(Main.prefix + Main.msg("warpAlreadyExists"));
+							return true;
+						}
+						
+						if (Main.menuConfig.contains("warps")) {
+							for (String key : Main.menuConfig.getConfigurationSection("warps").getKeys(false)) {
+								String name = Main.menuConfig.getString("warps." + key + ".name");
+								
+								if (name.equals(warpName)) {
+									sender.sendMessage(Main.prefix + Main.msg("warpAlreadyExists"));
+									return true;
+								}
+							}
+						}
+						
+						
+						
 						int nextIndex = ConfigLoader.getNextWarpId();
 						
 						Main.menuConfig.set("warps." + nextIndex + ".name", warpName);
-						Main.menuConfig.set("warps." + nextIndex + ".location", ConfigLoader.serializeLocation(player.getLocation()));
+						Main.menuConfig.set("warps." + nextIndex + ".location", Main.serverName + ":" + ConfigLoader.serializeLocation(player.getLocation()));
 						Main.menuConfig.set("warps." + nextIndex + ".enabled", false);
 						
 						//Create Place Holders

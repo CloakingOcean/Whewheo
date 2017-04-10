@@ -1,6 +1,5 @@
 package com.exitium.whewheo.particles.send.generators;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -10,7 +9,6 @@ import com.exitium.whewheo.init.ServerSelectionHandler;
 import com.exitium.whewheo.particles.ParticleEffect;
 import com.exitium.whewheo.particles.ParticleGenerator;
 import com.exitium.whewheo.particles.send.SendParticleGenerator;
-import com.exitium.whewheo.teleportobjects.ServerTP;
 import com.exitium.whewheo.teleportobjects.WarpTP;
 
 /**
@@ -30,10 +28,6 @@ public class NetherPortal extends SendParticleGenerator{
 	private int currentSecond = -1;
 	
 	//Remember to go up from the players location because the player's location refers to the bottom of their feet.
-	
-	public NetherPortal(Player player, ServerTP server) {
-		super(player, 1, server);
-	}
 	
 	public NetherPortal(Player player, WarpTP warp) {
 		super(player, 1, warp);
@@ -107,13 +101,14 @@ public class NetherPortal extends SendParticleGenerator{
 			currentSecond = (int) secondsPassed;
 		}else{
 			if (warp != null) {
+				//
 				Main.centeredTP(player, warp.getLocation());
 				player.closeInventory();
-//					new PurpleSphere(player).runTaskTimer(Main.instance, 0, 1);
+//						new PurpleSphere(player).runTaskTimer(Main.instance, 0, 1);
 				
 				
-//					
-//					ParticleGenerator generator = ;
+//						
+//						ParticleGenerator generator = ;
 				
 				//Switch to determine generator for specific item;
 				
@@ -121,15 +116,11 @@ public class NetherPortal extends SendParticleGenerator{
 				
 				generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
 				
-//					ParticleEffect.SPELL_WITCH.display(new Vector(0, 0, 0), 1, player.getLocation().add(0, 2, 0), 100);
+//						ParticleEffect.SPELL_WITCH.display(new Vector(0, 0, 0), 1, player.getLocation().add(0, 2, 0), 100);
 				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-				
-			}
-			if (server != null) {
-				//Add check for if player is online
-				
+			}else{
 				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-				Main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), server.getServer());
+				handleLocationDetails(player);
 			}
 			cancel();
 			

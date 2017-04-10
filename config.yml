@@ -1,24 +1,14 @@
-serverSelector:
+warpSelector:
   itemOnJoin: true
-  name: '&b&lServer Selector'
+  name: '&b&lWarp Selector'
   material: '345:0'
   slot: 0
   enchantment: 'null'
   quantity: 1
   lore:
-  - 'Click to Select A Server!'
+  - 'Click to Select a Warp!'
   rightClick: true
   leftClick: true
-warpSelector:
-  name: '&b&lWarp Selector'
-  material: '345:0'
-  enchantment: 'null'
-  quantity: 1
-  lore:
-  - 'Click to Select A Warp!'
-serverMenu:
-  name: '&8&lServer Selector'
-  size: 45
 warpMenu:
   name: '&8&lWarp Selector'
   size: 45
@@ -28,9 +18,9 @@ general:
 messages:
   reloadedConfig: "Successfully reloaded config"
   createdWarp: "You have successfully added a new warp."
+  warpAlreadyExists: "That warp already exists"
   warpAlreadyEnabled: "This warp is already enabled!"
   enabledWarp: "Enabled Warp"
   noWarpsSaved: "No warps have been saved yet"
-  alreadyConnected: "You are already connected to this server"
   teleportationCancelled: "Teleportation Cancelled"
   teleportationWillCommenceIn: "Teleportation will commence in %time%"

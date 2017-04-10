@@ -9,9 +9,7 @@ import com.exitium.whewheo.Main;
 import com.exitium.whewheo.init.ServerSelectionHandler;
 import com.exitium.whewheo.particles.ParticleEffect;
 import com.exitium.whewheo.particles.ParticleGenerator;
-import com.exitium.whewheo.particles.receive.generators.Emerald;
 import com.exitium.whewheo.particles.send.SendParticleGenerator;
-import com.exitium.whewheo.teleportobjects.ServerTP;
 import com.exitium.whewheo.teleportobjects.WarpTP;
 
 /**
@@ -29,10 +27,8 @@ public class Spiral extends SendParticleGenerator{
 	
 	public Spiral(Player player, WarpTP warp) {
 		super(player, 1, warp);
-	}
-	
-	public Spiral(Player player, ServerTP server) {
-		super(player, 1, server);
+		
+		Bukkit.getServer().getLogger().info("A spiral is loading up");
 	}
 	
 	@Override
@@ -165,14 +161,15 @@ public class Spiral extends SendParticleGenerator{
 					}
 					currentSecond = (int) secondsPassed;
 				}else{
-					if (warp != null) {
+					if (warp.getServerName().equals(Main.serverName)) {
+						//
 						Main.centeredTP(player, warp.getLocation());
 						player.closeInventory();
-//							new PurpleSphere(player).runTaskTimer(Main.instance, 0, 1);
+//								new PurpleSphere(player).runTaskTimer(Main.instance, 0, 1);
 						
 						
-//							
-//							ParticleGenerator generator = ;
+//								
+//								ParticleGenerator generator = ;
 						
 						//Switch to determine generator for specific item;
 						
@@ -180,17 +177,13 @@ public class Spiral extends SendParticleGenerator{
 						
 						generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
 						
-//							ParticleEffect.SPELL_WITCH.display(new Vector(0, 0, 0), 1, player.getLocation().add(0, 2, 0), 100);
+//								ParticleEffect.SPELL_WITCH.display(new Vector(0, 0, 0), 1, player.getLocation().add(0, 2, 0), 100);
 						ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-						
-					}
-					if (server != null) {
-						
-						//Add check for if player is online
-						
+					}else{
 						ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-						Main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), server.getServer());
+						handleLocationDetails(player);
 					}
+					cancel();
 				}
 			}else{
 				cancel();

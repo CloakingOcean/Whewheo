@@ -19,6 +19,7 @@ public class WarpTP {
 
 	private int id;
 	private String name;
+	private String serverName;
 	private Location location;
 	private int slot;
 	private String material;
@@ -31,9 +32,10 @@ public class WarpTP {
 	private ValidReceiveGenerators receive;
 	
 	
-	public WarpTP(int id, String name, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands, ValidSendGenerators send, ValidReceiveGenerators receive) {
+	public WarpTP(int id, String name, String serverName, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands, ValidSendGenerators send, ValidReceiveGenerators receive) {
 		this.id = id;
 		this.name = name;
+		this.setServerName(serverName);
 		this.location = location;
 		this.slot = slot;
 		this.material = material;
@@ -212,5 +214,19 @@ public class WarpTP {
 	 */
 	public void setReceive(ValidReceiveGenerators receive) {
 		this.receive = receive;
+	}
+
+	/**
+	 * @return the serverName
+	 */
+	public String getServerName() {
+		return serverName;
+	}
+
+	/**
+	 * @param serverName the serverName to set
+	 */
+	public void setServerName(String serverName) {
+		this.serverName = serverName;
 	}
 }
