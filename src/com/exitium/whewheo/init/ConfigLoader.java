@@ -93,122 +93,126 @@ public class ConfigLoader {
 			
 			if (enabled) {
 				
-				String name = ConfigLoader.getColoredTextFromMenu("warps." + key + ".name");
-				
-				String locationText = section.getString("location");
-				
-				String[] splitter = locationText.split(":");
-				
-				/*
-				 * Possible Values:
-				 * 
-				 * location: <server>:<world>:<x>:<y>:<z>  args.length = 5
-				 * 
-				 * location: <server>:<world>  args.length = 2
-				 * 
-				 * location: <server>  args.length = 1
-				 */
-				
-				String serverName = "";
-				Location location = null;
-				
-				if (splitter.length == 5) {
-					//Send to server with specific location
-					serverName = splitter[0];
+				int slot = section.getInt("slot");
+				if (slot != -1) {
 					
-					String worldName = splitter[1];
+					String name = ConfigLoader.getColoredTextFromMenu("warps." + key + ".name");
 					
-					int x, y, z;
+					String locationText = section.getString("location");
+					
+					String[] splitter = locationText.split(":");
+					
+					/*
+					 * Possible Values:
+					 * 
+					 * location: <server>:<world>:<x>:<y>:<z>  args.length = 5
+					 * 
+					 * location: <server>:<world>  args.length = 2
+					 * 
+					 * location: <server>  args.length = 1
+					 */
+					
+					String serverName = "";
+					Location location = null;
+					
+					if (splitter.length == 5) {
+						//Send to server with specific location
+						serverName = splitter[0];
+						
+						String worldName = splitter[1];
+						
+						int x, y, z;
+						
+						try {
+							x = Integer.parseInt(splitter[2]);
+							y = Integer.parseInt(splitter[3]);
+							z = Integer.parseInt(splitter[4]);
+						}catch (NumberFormatException e) {
+							Bukkit.getServer().getLogger().severe("Couldn't load warp: " + key + ". Invalid location coordinates. Invalid Integers.");
+							return;
+						}
+						
+						World world = Bukkit.getServer().getWorld(worldName);
+						if (world == null) {
+							Bukkit.getServer().getLogger().severe("Couldn't load warp: " + key + ". Couldn't find world : " + worldName + "! Please edit location configuration for warp " + key + "!");
+							return;
+						}else{
+							location = new Location(world, x, y, z);
+						}
+						
+					}else if (splitter.length == 2) {
+						//Send to server at default spawn location of world
+						serverName = splitter[0];
+						
+						String worldName = splitter[1];
+						
+						World world = Bukkit.getServer().getWorld(worldName);
+						if (world == null) {
+							Bukkit.getServer().getLogger().severe("Couldn't load warp: " + key + ". Couldn't find world : " + worldName + "! Please edit location configuration for warp " + key + "!");
+							return;
+						}else{
+							location = world.getSpawnLocation();
+						}
+						
+					}else if (splitter.length == 1) {
+						//Send to server with no extra teleportation
+						serverName = splitter[0];
+					}
+					String material = section.getString("material");
+					String enchantment = section.getString("enchantment");
+					int quantity = section.getInt("quantity");
+					List<String> lore = section.getStringList("lore");
+					
+					boolean enableCommands = section.getBoolean("enableCommands");
+					List<String> commands = section.getStringList("commands");
+					
+					int id = 0;
 					
 					try {
-						x = Integer.parseInt(splitter[2]);
-						y = Integer.parseInt(splitter[3]);
-						z = Integer.parseInt(splitter[4]);
-					}catch (NumberFormatException e) {
-						Bukkit.getServer().getLogger().severe("Couldn't load warp: " + key + ". Invalid location coordinates. Invalid Integers.");
+						id = Integer.parseInt(key);
+					}catch(NumberFormatException e) {
+						Bukkit.getServer().getLogger().severe("Invalid id: " + key + ". Skipping..");
 						return;
 					}
 					
-					World world = Bukkit.getServer().getWorld(worldName);
-					if (world == null) {
-						Bukkit.getServer().getLogger().severe("Couldn't load warp: " + key + ". Couldn't find world : " + worldName + "! Please edit location configuration for warp " + key + "!");
-						return;
-					}else{
-						location = new Location(world, x, y, z);
-					}
+					Enchantment realEnchantment = null;
 					
-				}else if (splitter.length == 2) {
-					//Send to server at default spawn location of world
-					serverName = splitter[0];
-					
-					String worldName = splitter[1];
-					
-					World world = Bukkit.getServer().getWorld(worldName);
-					if (world == null) {
-						Bukkit.getServer().getLogger().severe("Couldn't load warp: " + key + ". Couldn't find world : " + worldName + "! Please edit location configuration for warp " + key + "!");
+					if (enchantment.equals("null")) {
+						realEnchantment = null;
+					}else if (Enchantment.getByName(enchantment) == null) {
+						Bukkit.getServer().getLogger().severe("No enchantment by the name of: " + enchantment + "!");
 						return;
 					}else{
-						location = world.getSpawnLocation();
+						realEnchantment = Enchantment.getByName(enchantment);
 					}
 					
-				}else if (splitter.length == 1) {
-					//Send to server with no extra teleportation
-					serverName = splitter[0];
-				}
-				
-						
-				int slot = section.getInt("slot");
-				String material = section.getString("material");
-				String enchantment = section.getString("enchantment");
-				int quantity = section.getInt("quantity");
-				List<String> lore = section.getStringList("lore");
-				
-				boolean enableCommands = section.getBoolean("enableCommands");
-				List<String> commands = section.getStringList("commands");
-				
-				int id = 0;
-				
-				try {
-					id = Integer.parseInt(key);
-				}catch(NumberFormatException e) {
-					Bukkit.getServer().getLogger().severe("Invalid id: " + key + ". Skipping..");
-					return;
-				}
-				
-				Enchantment realEnchantment = null;
-				
-				if (enchantment.equals("null")) {
-					realEnchantment = null;
-				}else if (Enchantment.getByName(enchantment) == null) {
-					Bukkit.getServer().getLogger().severe("No enchantment by the name of: " + enchantment + "!");
-					return;
-				}else{
-					realEnchantment = Enchantment.getByName(enchantment);
-				}
-				
-				String sendGeneratorName = section.getString("sendEffect");
-				ValidSendGenerators validSendGenerator = null;
-				try {
-					validSendGenerator = ValidSendGenerators.valueOf(sendGeneratorName.toUpperCase());
-				}catch (Exception e) {
-					Bukkit.getLogger().severe("Couldn't load warp " + key + ". Invalid Send Effect Specified. Please review \"generatorhelp.txt\" in plugin folder.");
-					return;
-				}
-				
-				String receiveGeneratorName = section.getString("receiveEffect");
-				ValidReceiveGenerators validReceiveGenerator = null;
-				
-				try {
-					validReceiveGenerator = ValidReceiveGenerators.valueOf(receiveGeneratorName.toUpperCase());
-				}catch (Exception e) {
-					Bukkit.getLogger().severe("Couldn't load warp " + key + ". Invalid Receive Effect Specified. Please review \"generatorhelp.txt\" in plugin folder.");
-					return;
-				}
-				
-				WarpTP warp = new WarpTP(id, name, serverName, location, slot, material, realEnchantment, quantity, lore, enableCommands, commands, validSendGenerator, validReceiveGenerator);
-				
-				warps.put(name, warp);
-				
+					String sendGeneratorName = section.getString("sendEffect");
+					ValidSendGenerators validSendGenerator = null;
+					try {
+						validSendGenerator = ValidSendGenerators.valueOf(sendGeneratorName.toUpperCase());
+					}catch (Exception e) {
+						Bukkit.getLogger().severe("Couldn't load warp " + key + ". Invalid Send Effect Specified. Please review \"generatorhelp.txt\" in plugin folder.");
+						return;
+					}
+					
+					String receiveGeneratorName = section.getString("receiveEffect");
+					ValidReceiveGenerators validReceiveGenerator = null;
+					
+					try {
+						validReceiveGenerator = ValidReceiveGenerators.valueOf(receiveGeneratorName.toUpperCase());
+					}catch (Exception e) {
+						Bukkit.getLogger().severe("Couldn't load warp " + key + ". Invalid Receive Effect Specified. Please review \"generatorhelp.txt\" in plugin folder.");
+						return;
+					}
+					
+					WarpTP warp = new WarpTP(id, name, serverName, location, slot, material, realEnchantment, quantity, lore, enableCommands, commands, validSendGenerator, validReceiveGenerator);
+					
+					warps.put(name, warp);
+					
+					}else{
+						Bukkit.getServer().getLogger().info("Skipping warp " + key + " because it's slot has not been updated in the menu.yml. Please update it to use the warp.");
+					}
+					
 			}else{
 				Bukkit.getServer().getLogger().info("Skipping warp " + key + " because it's not enabled");
 			}

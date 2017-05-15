@@ -22,7 +22,6 @@ import com.exitium.whewheo.teleportobjects.WarpTP;
  */
 public class Spiral extends SendParticleGenerator{
 	
-	private int currentSecond = -1;
 	private double radius = 1;
 	
 	public Spiral(Player player, WarpTP warp) {
@@ -151,40 +150,7 @@ public class Spiral extends SendParticleGenerator{
 				
 				
 				
-				if (secondsPassed < delay) {
-					
-					
-					
-					if (currentSecond < (int) secondsPassed) {
-						currentSecond = (int) secondsPassed;
-						player.sendMessage(Main.prefix + Main.msg("teleportationWillCommenceIn").replace("%time%", ((int)(delay - currentSecond)) + ""));
-					}
-					currentSecond = (int) secondsPassed;
-				}else{
-					if (warp.getServerName().equals(Main.serverName)) {
-						//
-						Main.centeredTP(player, warp.getLocation());
-						player.closeInventory();
-//								new PurpleSphere(player).runTaskTimer(Main.instance, 0, 1);
-						
-						
-//								
-//								ParticleGenerator generator = ;
-						
-						//Switch to determine generator for specific item;
-						
-						ParticleGenerator generator = getGenerator(player, warp);
-						
-						generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
-						
-//								ParticleEffect.SPELL_WITCH.display(new Vector(0, 0, 0), 1, player.getLocation().add(0, 2, 0), 100);
-						ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-					}else{
-						ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-						handleLocationDetails(player);
-					}
-					cancel();
-				}
+				checkTeleporation();
 			}else{
 				cancel();
 			}

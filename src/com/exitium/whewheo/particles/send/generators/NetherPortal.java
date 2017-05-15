@@ -1,5 +1,6 @@
 package com.exitium.whewheo.particles.send.generators;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -25,8 +26,6 @@ public class NetherPortal extends SendParticleGenerator{
 	private int width = 2;
 	final private double space = .4;
 	
-	private int currentSecond = -1;
-	
 	//Remember to go up from the players location because the player's location refers to the bottom of their feet.
 	
 	public NetherPortal(Player player, WarpTP warp) {
@@ -36,96 +35,68 @@ public class NetherPortal extends SendParticleGenerator{
 	@Override
 	public void run() {
 		
-		Location loc = player.getLocation();
-		for (double r = (width/2) * -1; r < (width/2); r += space) {
-			for (double c = (height/2) * -1; c < (height/2); c += space) {
-		        double x = r;
-		        double y = 0;
-		        double z = c;
-		        Vector v = new Vector(x, 0, z);
-		        v = rotateAroundAxisY(v, 50 * secondsPassed);
-		        loc.add(v.getX(), v.getY(), v.getZ());
-		        ParticleEffect.SMOKE_NORMAL
-		        .display(0, 0, 0, 0, 1, loc, 100D);
-				loc.subtract(v.getX(), v.getY(), v.getZ());
-			}
-		}
-		
-		loc.add(0, height, 0);
-		for (double r = (width/2) * -1; r < (width/2); r += space) {
-			for (double c = (height/2) * -1; c < (height/2); c += space) {
-		        double x = r;
-		        double y = 0;
-		        double z = c;
-		        Vector v = new Vector(x, 0, z);
-		        v = rotateAroundAxisY(v, 50 * secondsPassed);
-		        loc.add(v.getX(), v.getY(), v.getZ());
-		        ParticleEffect.SMOKE_NORMAL
-		        .display(0, 0, 0, 0, 1, loc, 100D);
-				loc.subtract(v.getX(), v.getY(), v.getZ());
-			}
-		}
-		loc.subtract(0, height, 0);
-		
-		for (double y = 0; y < height; y += space) {
-			for (double r = (width/2) * -1; r < (width/2); r += space) {
-				for (double c = (height/2) * -1; c < (height/2); c += space) {
-			        double x = r;
-			        double z = c;
-			        Vector v = new Vector(x, y, z);
-			        v = rotateAroundAxisY(v, 50 * secondsPassed);
-			        loc.add(v.getX(), v.getY(), v.getZ());
-			        
-			        if (x >= (width/2)- space || x <= ((width/2) * -1) + space  || 
-			        	z >= (height/2)- space || z <= ((height/2) * -1) + space) {
-			        	ParticleEffect.SMOKE_NORMAL.display(0, 0, 0, 0, 1, loc, 100D);
-			        }else{
-				        ParticleEffect.SPELL_WITCH.display(0, 0, 0, 0, 1, loc, 100D);
-			        }
-					loc.subtract(v.getX(), v.getY(), v.getZ());
+		if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null ) {
+			if (ServerSelectionHandler.teleportingPlayers.contains(player.getUniqueId().toString())) {
+				Location loc = player.getLocation();
+				for (double r = (width/2) * -1; r < (width/2); r += space) {
+					for (double c = (height/2) * -1; c < (height/2); c += space) {
+				        double x = r;
+				        double y = 0;
+				        double z = c;
+				        Vector v = new Vector(x, 0, z);
+				        v = rotateAroundAxisY(v, 50 * secondsPassed);
+				        loc.add(v.getX(), v.getY(), v.getZ());
+				        ParticleEffect.SMOKE_NORMAL
+				        .display(0, 0, 0, 0, 1, loc, 100D);
+						loc.subtract(v.getX(), v.getY(), v.getZ());
+					}
 				}
-			}
-		}
-		//if (t > Math.PI * 8) {
-		//    this.cancel();
-		//}
-		
-		if (secondsPassed < delay) {
-			
-			
-			
-			if (currentSecond < (int) secondsPassed) {
-				currentSecond = (int) secondsPassed;
-				player.sendMessage(Main.prefix + Main.msg("teleportationWillCommenceIn").replace("%time%", ((int)(delay - currentSecond)) + ""));
-			}
-			currentSecond = (int) secondsPassed;
-		}else{
-			if (warp != null) {
-				//
-				Main.centeredTP(player, warp.getLocation());
-				player.closeInventory();
-//						new PurpleSphere(player).runTaskTimer(Main.instance, 0, 1);
 				
+				loc.add(0, height, 0);
+				for (double r = (width/2) * -1; r < (width/2); r += space) {
+					for (double c = (height/2) * -1; c < (height/2); c += space) {
+				        double x = r;
+				        double y = 0;
+				        double z = c;
+				        Vector v = new Vector(x, 0, z);
+				        v = rotateAroundAxisY(v, 50 * secondsPassed);
+				        loc.add(v.getX(), v.getY(), v.getZ());
+				        ParticleEffect.SMOKE_NORMAL
+				        .display(0, 0, 0, 0, 1, loc, 100D);
+						loc.subtract(v.getX(), v.getY(), v.getZ());
+					}
+				}
+				loc.subtract(0, height, 0);
 				
-//						
-//						ParticleGenerator generator = ;
+				for (double y = 0; y < height; y += space) {
+					for (double r = (width/2) * -1; r < (width/2); r += space) {
+						for (double c = (height/2) * -1; c < (height/2); c += space) {
+					        double x = r;
+					        double z = c;
+					        Vector v = new Vector(x, y, z);
+					        v = rotateAroundAxisY(v, 50 * secondsPassed);
+					        loc.add(v.getX(), v.getY(), v.getZ());
+					        
+					        if (x >= (width/2)- space || x <= ((width/2) * -1) + space  || 
+					        	z >= (height/2)- space || z <= ((height/2) * -1) + space) {
+					        	ParticleEffect.SMOKE_NORMAL.display(0, 0, 0, 0, 1, loc, 100D);
+					        }else{
+						        ParticleEffect.SPELL_WITCH.display(0, 0, 0, 0, 1, loc, 100D);
+					        }
+							loc.subtract(v.getX(), v.getY(), v.getZ());
+						}
+					}
+				}
 				
-				//Switch to determine generator for specific item;
-				
-				ParticleGenerator generator = getGenerator(player, warp);
-				
-				generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
-				
-//						ParticleEffect.SPELL_WITCH.display(new Vector(0, 0, 0), 1, player.getLocation().add(0, 2, 0), 100);
-				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+				checkTeleporation();
 			}else{
-				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
-				handleLocationDetails(player);
+				cancel();
 			}
-			cancel();
 			
+			secondsPassed += ((double)1)/((double)20);
+		}else{
+			ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+			cancel();
 		}
-		
-		secondsPassed += ((double)1)/((double)20);
 	}
 }

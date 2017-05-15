@@ -8,6 +8,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -192,75 +193,70 @@ public class ServerSelectionHandler implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Bukkit.getServer().broadcastMessage("Player UUID: " + event.getPlayer().getUniqueId().toString());
-		for (String s : Main.receivedPlayers.keySet()) {
+		for (String s : Main.getSentPlayersConfig().getKeys(false)) {
 			Bukkit.getServer().broadcastMessage("ReceivedPlayers Key: " + s);
 		}
 		
-		receivedPlayersIf: if (Main.receivedPlayers.containsKey(event.getPlayer().getUniqueId().toString())) {
+		receivedPlayersIf: if (Main.getSentPlayersConfig().contains(event.getPlayer().getUniqueId().toString())) {
 			//Sent from a Server with this plugin
 			Bukkit.getServer().getLogger().info("A ReceivedPlayer joined. Removing him from the list");
-			Main.receivedPlayers.remove(event.getPlayer().getUniqueId());
 			
-//			receivedPlayers.put(playerUUID, worldName + ":" + x + ":" + y + ":" + z + ":" + generatorName);
 			
-			if (Main.receivedPlayers.get(event.getPlayer().getUniqueId().toString()).contains(":")) {
+			FileConfiguration fc = Main.getSentPlayersConfig();
+			String message = fc.getString(event.getPlayer().getUniqueId().toString());
+			
+			if (message.contains(":")) {
+			
+				String[] splitter =  message.split(":");
 				
-				String[] splitter = Main.receivedPlayers.get(event.getPlayer().getUniqueId().toString()).split(":");
+//				fc.set(player.getUniqueId().toString(), loc.getWorld().getName() + ":" + loc.getBlockX() + ":" + loc.getBlockY() + ":" + loc.getBlockZ() + ":" + generator.name());
+				
+				int x = 0, y = 0, z = 0;
 				
 				String worldName = splitter[0];
-				int x = 0, y = 0, z = 0;
-				x = Integer.parseInt(splitter[1]);
-				y = Integer.parseInt(splitter[2]);
-				z = Integer.parseInt(splitter[3]);
-				
-				World targetWorld = Bukkit.getWorld(worldName);
-				if (targetWorld == null) {
-					Bukkit.getServer().getLogger().severe("Couldn't find target world: " + worldName + "! Please update menu.yml's of other servers.");
-					break receivedPlayersIf;
+				try {
+					x = Integer.parseInt(splitter[1]);
+					y = Integer.parseInt(splitter[2]);
+					z = Integer.parseInt(splitter[3]);
+				}catch(NumberFormatException e) {
+					Bukkit.getServer().getLogger().severe("Invalid information saved in sentplayers.yml. Contact Developer");
 				}
-				
-				
-				Location targetLocation = new Location(targetWorld, x, y, z);
-				
-				Main.centeredTP(event.getPlayer(), targetLocation);
 				
 				String generatorName = splitter[4];
 				
-				ValidReceiveGenerators generator =  null;
-				
-				try {
-					generator = ValidReceiveGenerators.valueOf(generatorName);
-				}catch (Exception e) {
-					Bukkit.getServer().getLogger().severe("Couldn't match generator  name: " + generatorName + " to any valid receive generators");
-					return;
+				World targetWorld = Bukkit.getWorld(worldName);
+				if (targetWorld == null) {
+					break receivedPlayersIf;
 				}
 				
-				ReceiveParticleGenerator receiveParticleGenerator = Main.getReceiveGeneratorFromEnum(generator, event.getPlayer());
+				Location loc = new Location(targetWorld, x, y, z);
 				
-				receiveParticleGenerator.runTaskTimer(Main.instance, 0, receiveParticleGenerator.getTickDelay());
+				Main.centeredTP(event.getPlayer(), loc);
+				
+				
+				
+				ReceiveParticleGenerator g = Main.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
+				
+				g.runTaskTimer(Main.instance, 0, g.getTickDelay());
+				
 			}else{
-				String generatorName = Main.receivedPlayers.get(event.getPlayer().getUniqueId().toString());
+				String generatorName = message;
 				
-				ValidReceiveGenerators generator =  null;
+				ReceiveParticleGenerator g = Main.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
 				
-				try {
-					generator = ValidReceiveGenerators.valueOf(generatorName);
-				}catch (Exception e) {
-					Bukkit.getServer().getLogger().severe("Couldn't match generator  name: " + generatorName + " to any valid receive generators");
-					return;
-				}
+				g.runTaskTimer(Main.instance, 0, g.getTickDelay());
 				
-				ReceiveParticleGenerator receiveParticleGenerator = Main.getReceiveGeneratorFromEnum(generator, event.getPlayer());
 				
-				receiveParticleGenerator.runTaskTimer(Main.instance, 0, receiveParticleGenerator.getTickDelay());
+				
 			}
-			
+			fc.set(event.getPlayer().getUniqueId().toString(), null);
+			Main.saveSentPlayersConfig();
 		}
 		
-		if (Main.serverName == null || Main.receivedPlayers.isEmpty() == false) {
+		if (Main.serverName == null) {
 
 			ServerNameGetter sng = new ServerNameGetter(event.getPlayer());
-			int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, sng, (long) 0, (long) 1L);
+			int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, sng, (long) 40L, (long) 1L);
 			sng.setThreadId(threadId);
 		}
 		
@@ -468,27 +464,65 @@ public class ServerSelectionHandler implements Listener {
 
 	/** Updates the Lore of items and also requests the player count of a specified server.*/
 	public static void updatePlaceHolders(Player player) {
+		ArrayList<String> preivouslyRequested = new ArrayList<String>();
+		
+		
 		for (WarpTP warp : ConfigLoader.warps.values()) {
+			ArrayList<String> previouslyRequested = new ArrayList<String>();
 			
-			boolean containsPlaceHolders = false;
+			ArrayList<String> lore = new ArrayList<String>();
 			
 			for (String s : warp.getLore()) {
-				if (s.contains("%count%") || s.contains("%player%")) {
-					containsPlaceHolders = true;
+//				s = s.replace("%player%", player.getName());
+				
+				Bukkit.broadcastMessage("S: " + s);
+				
+				if (s.contains("%count%")) {
+					if (!previouslyRequested.contains(warp.getServerName())) {
+						requestPlayerCount(warp.getServerName(), player);
+						previouslyRequested.add(warp.getServerName());
+					}
 				}
+				
+				
+				lore.add(s);
 			}
 			
-			if (containsPlaceHolders) {
-				List<String> temporaryLore = new ArrayList<String>();
-				
-				for (String lore : warp.getLore()) {
-					temporaryLore.add(lore.replace("%player%", player.getName()));
-				}
-				
-				warp.setLore(temporaryLore);
-			}
+			warp.setLore(lore);
 			
-			requestPlayerCount(warp.getServerName(), player);
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+//			boolean containsPlaceHolders = false;
+//			
+//			for (String s : warp.getLore()) {
+//				if (s.contains("%count%") || s.contains("%player%")) {
+//					containsPlaceHolders = true;
+//				}
+//			}
+//			
+//			if (containsPlaceHolders) {
+//				List<String> temporaryLore = new ArrayList<String>();
+//				
+//				for (String lore : warp.getLore()) {
+//					temporaryLore.add(lore.replace("%player%", player.getName()));
+//				}
+//				
+//				warp.setLore(temporaryLore);
+//			}
+//			
+//			requestPlayerCount(warp.getServerName(), player);
 		}
 		
 	}
@@ -509,23 +543,23 @@ public class ServerSelectionHandler implements Listener {
 		
 	}
 	
-	/** Gets a loaded server item from the name of the server*/
-	public static ItemStack getWarpItemFromName(String name) {
-		for (ItemStack item : warpItems.keySet()) {
-			if (warpItems.get(item).getServerName().equals(name)) {
-				return item;
-			}
-		}
-		return null;
-	}
-	
-	/** Gets the ServerTP object from the name of the server*/
-	public static WarpTP getWarpFromName(String name) {
-		for (WarpTP warp : warpItems.values()) {
-			if (warp.getServerName().equals(name)) {
-				return warp;
-			}
-		}
-		return null;
-	}
+//	/** Gets a loaded server item from the name of the server*/
+//	public static ItemStack getWarpItemFromName(String name) {
+//		for (ItemStack item : warpItems.keySet()) {
+//			if (warpItems.get(item).getServerName().equals(name)) {
+//				return item;
+//			}
+//		}
+//		return null;
+//	}
+//	
+//	/** Gets the ServerTP object from the name of the server*/
+//	public static WarpTP getWarpFromName(String name) {
+//		for (WarpTP warp : warpItems.values()) {
+//			if (warp.getServerName().equals(name)) {
+//				return warp;
+//			}
+//		}
+//		return null;
+//	}
 }

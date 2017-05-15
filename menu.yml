@@ -11,7 +11,6 @@ warps:
     - ''
     - '&eThis is an'
     - '&eexample lore.'
-    - '&ePlayer: %player%'
     - '&aPlayers Online: &e%count%'
     enableCommands: true
     commands:

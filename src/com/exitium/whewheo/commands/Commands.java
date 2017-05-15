@@ -62,7 +62,7 @@ public class Commands implements CommandExecutor{
 					return true;
 				}else if (args[0].equalsIgnoreCase("test")) {
 					sender.sendMessage("Sending received Players.");
-					for (String playerUUID : Main.receivedPlayers.keySet()) {
+					for (String playerUUID : Main.getSentPlayersConfig().getKeys(false)) {
 						sender.sendMessage("Player: " + playerUUID);
 					}
 				}
@@ -124,7 +124,7 @@ public class Commands implements CommandExecutor{
 						Main.menuConfig.set("warps." + nextIndex + ".enabled", false);
 						
 						//Create Place Holders
-						Main.menuConfig.set("warps." + nextIndex + ".slot", 0);
+						Main.menuConfig.set("warps." + nextIndex + ".slot", -1);
 						Main.menuConfig.set("warps." + nextIndex + ".material", "341:0");
 						Main.menuConfig.set("warps." + nextIndex + ".enchantment", "null");
 						Main.menuConfig.set("warps." + nextIndex + ".quantity", 1);
