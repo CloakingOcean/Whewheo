@@ -427,7 +427,6 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 //				
 //				boolean online = targetPlayer != null;
 //				
-//				Bukkit.broadcastMessage("Player Online: " + online);
 //				
 //				if (splitter.length == 6) {
 //
@@ -457,11 +456,6 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 //						receivedPlayers.put(playerUUID, worldName + ":" + x + ":" + y + ":" + z + ":" + generatorName);
 //					}else{
 //						
-//						Bukkit.broadcastMessage("Location:");
-//						Bukkit.broadcastMessage("  world:" + worldName);
-//						Bukkit.broadcastMessage("  x:" + x);
-//						Bukkit.broadcastMessage("  y:" + y);
-//						Bukkit.broadcastMessage("  z:" + z);
 //						
 //						Location targetLocation = new Location(targetWorld, x, y, z);
 //						

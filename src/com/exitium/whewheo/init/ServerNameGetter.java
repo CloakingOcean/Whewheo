@@ -35,7 +35,6 @@ public class ServerNameGetter implements Runnable{
 	/** Continually checks for the player until they have actually joinwd the server. Once they have actually joined, it sends a BungeeRequest to get the server's name*/
 	@Override
 	public void run() {
-		Bukkit.getServer().broadcastMessage("Running Thread");
 		if (threadId != 0) {
 			if (Main.serverName == null) {
 				Bukkit.getServer().getLogger().severe("ServerName == null");

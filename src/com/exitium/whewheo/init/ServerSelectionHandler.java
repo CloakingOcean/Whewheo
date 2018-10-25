@@ -192,10 +192,6 @@ public class ServerSelectionHandler implements Listener {
 	 */
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		Bukkit.getServer().broadcastMessage("Player UUID: " + event.getPlayer().getUniqueId().toString());
-		for (String s : Main.getSentPlayersConfig().getKeys(false)) {
-			Bukkit.getServer().broadcastMessage("ReceivedPlayers Key: " + s);
-		}
 		
 		receivedPlayersIf: if (Main.getSentPlayersConfig().contains(event.getPlayer().getUniqueId().toString())) {
 			//Sent from a Server with this plugin
@@ -475,7 +471,6 @@ public class ServerSelectionHandler implements Listener {
 			for (String s : warp.getLore()) {
 //				s = s.replace("%player%", player.getName());
 				
-				Bukkit.broadcastMessage("S: " + s);
 				
 				if (s.contains("%count%")) {
 					if (!previouslyRequested.contains(warp.getServerName())) {
