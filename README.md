@@ -405,20 +405,20 @@ This allows the plugin to make a correct generators list for owners to see.
   <summary>Update Generator</summary>
   
 ```java
-public enum ValidReceiveGenerators {
-    EMERALD(
-    "Displays an emerald by starting from the top (1 block above the player's head) and creating circles with varying sizes."
-    ),
-    
-    FIRE_EXPLOSION(
-    "Displays three fire rings that explode outward."    
-    ),
-    //
-    SPHERE(
-    "Displays a sphere around the player"
-    );
-    //
-    ***
+***
+public enum ValidSendGenerators {
+	SPIRAL(
+		"Displays a white thick spiral starting from 1 block above the player's head, coming from a small circle of clouds."
+	),
+	
+	NETHER_PORTAL(
+		"Surrounds the Player in a box resembling a nether portal."
+	),
+	
+	SPHERE(
+		"Creates a sphere around the player."
+	),
+	***
 }
 ```
 </details>
