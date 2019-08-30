@@ -12,8 +12,6 @@ import com.exitium.whewheo.Main;
 import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.init.ServerSelectionHandler;
 
-import net.md_5.bungee.api.ChatColor;
-
 /**
  * CommandExecutor class for all Whewheo commands.
  * 
