@@ -1,14 +1,11 @@
 package com.exitium.whewheo.init;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 import com.exitium.whewheo.Main;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 /**
  * Meant to wait until a player joins to get the Server Name From Bungee.

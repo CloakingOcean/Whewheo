@@ -33,10 +33,6 @@ public class Emerald extends ReceiveParticleGenerator{
 				
 				Location loc = player.getLocation();
 				
-				int count = 1;
-				
-				double tempT = timeInRadians;
-				
 				if (secondsPassed < delay/2) {
 					radius += .1;
 				}else{

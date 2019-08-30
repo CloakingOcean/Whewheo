@@ -5,11 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
-import com.exitium.whewheo.particles.receive.generators.Emerald;
-import com.exitium.whewheo.particles.receive.generators.FireExplosion;
-import com.exitium.whewheo.teleportobjects.WarpTP;
-
 /**
  * General Particle Generator class that all Particle Generators must extend.
  * 

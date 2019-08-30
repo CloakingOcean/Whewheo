@@ -456,6 +456,7 @@ public class ConfigLoader {
 			
 			
 			fw.flush();
+			fw.close();
 			
 		}catch (IOException e) {
 			e.printStackTrace();

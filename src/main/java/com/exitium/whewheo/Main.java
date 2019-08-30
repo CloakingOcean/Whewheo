@@ -3,20 +3,8 @@ package com.exitium.whewheo;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.permissions.Permission;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import com.exitium.whewheo.commands.Commands;
 import com.exitium.whewheo.init.ConfigLoader;
@@ -33,6 +21,17 @@ import com.exitium.whewheo.teleportobjects.WarpTP;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.permissions.Permission;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -103,7 +102,7 @@ public class Main extends JavaPlugin implements PluginMessageListener{
 		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
 		
 		//Instantiates a new Config Loader to store information from the config
-		ConfigLoader loader = new ConfigLoader();
+		new ConfigLoader();
 		
 		//REgister listeners for ServerSelectionHandler.
 		Bukkit.getPluginManager().registerEvents(new ServerSelectionHandler(), this);

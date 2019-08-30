@@ -1,16 +1,14 @@
 package com.exitium.whewheo.particles.send.generators;
 
+import com.exitium.whewheo.init.ServerSelectionHandler;
+import com.exitium.whewheo.particles.ParticleEffect;
+import com.exitium.whewheo.particles.send.SendParticleGenerator;
+import com.exitium.whewheo.teleportobjects.WarpTP;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
-
-import com.exitium.whewheo.Main;
-import com.exitium.whewheo.init.ServerSelectionHandler;
-import com.exitium.whewheo.particles.ParticleEffect;
-import com.exitium.whewheo.particles.ParticleGenerator;
-import com.exitium.whewheo.particles.send.SendParticleGenerator;
-import com.exitium.whewheo.teleportobjects.WarpTP;
 
 /**
  * This is a Send Generator class
@@ -41,7 +39,6 @@ public class NetherPortal extends SendParticleGenerator{
 				for (double r = (width/2) * -1; r < (width/2); r += space) {
 					for (double c = (height/2) * -1; c < (height/2); c += space) {
 				        double x = r;
-				        double y = 0;
 				        double z = c;
 				        Vector v = new Vector(x, 0, z);
 				        v = rotateAroundAxisY(v, 50 * secondsPassed);
@@ -56,7 +53,6 @@ public class NetherPortal extends SendParticleGenerator{
 				for (double r = (width/2) * -1; r < (width/2); r += space) {
 					for (double c = (height/2) * -1; c < (height/2); c += space) {
 				        double x = r;
-				        double y = 0;
 				        double z = c;
 				        Vector v = new Vector(x, 0, z);
 				        v = rotateAroundAxisY(v, 50 * secondsPassed);

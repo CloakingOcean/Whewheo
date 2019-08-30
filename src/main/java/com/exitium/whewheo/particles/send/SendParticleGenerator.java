@@ -1,21 +1,16 @@
 package com.exitium.whewheo.particles.send;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-
 import com.exitium.whewheo.Main;
 import com.exitium.whewheo.init.ServerSelectionHandler;
 import com.exitium.whewheo.particles.ParticleGenerator;
 import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
 import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
 import com.exitium.whewheo.teleportobjects.WarpTP;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 
 /**
  * General Send Particle Generator class that all Send Particle Generators must extend.
@@ -38,14 +33,14 @@ public class SendParticleGenerator extends ParticleGenerator{
 		
 		if (Main.config.contains("general")) {
 			if (Main.config.getConfigurationSection("general").contains("teleportDelay")) {
-				this.delay = Main.config.getInt("general.teleportDelay");;
+				delay = Main.config.getInt("general.teleportDelay");;
 			}else{
 				Bukkit.getServer().getLogger().severe("Couldn't load SendParticleGeneartors because there is no \"teleportDelay\" section in config.");
-				this.delay = -1;
+				delay = -1;
 			}
 		}else{
 			Bukkit.getServer().getLogger().severe("Couldn't load SendParticleGeneartors because there is no \"general\" section in config.");
-			this.delay = -1;
+			delay = -1;
 		}
 	}
 
@@ -188,7 +183,7 @@ public class SendParticleGenerator extends ParticleGenerator{
 	}
 	
 	public void setDelay(double delay) {
-		this.delay = delay;
+		SendParticleGenerator.delay = delay;
 	}
 	
 	public ReceiveParticleGenerator getGenerator(Player player, WarpTP warp) {

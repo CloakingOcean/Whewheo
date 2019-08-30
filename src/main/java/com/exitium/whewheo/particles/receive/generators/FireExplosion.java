@@ -32,7 +32,6 @@ public class FireExplosion extends ReceiveParticleGenerator{
 		for (int i = 0; i < 16; i ++) {
 			timeInRadians = timeInRadians + Math.PI/8;
 			double x = (radius)*Math.cos(timeInRadians);
-			double y = 0;
 			double z = (radius)*Math.sin(timeInRadians);
 			Vector v = new Vector(x, 0, z);
 	        v = rotateAroundAxisZ(v, 40);
@@ -49,7 +48,6 @@ public class FireExplosion extends ReceiveParticleGenerator{
 		for (int i = 0; i < 16; i ++) {
 			timeInRadians = timeInRadians + Math.PI/8;
 			double x = (radius)*Math.cos(timeInRadians);
-			double y = 0;
 			double z = (radius)*Math.sin(timeInRadians);
 			Vector v = new Vector(x, 0, z);
 	        v = rotateAroundAxisZ(v, -40);
@@ -67,7 +65,6 @@ public class FireExplosion extends ReceiveParticleGenerator{
 		for (int i = 0; i < 16; i ++) {
 			timeInRadians = timeInRadians + Math.PI/8;
 			double x = (radius)*Math.cos(timeInRadians);
-			double y = 0;
 			double z = (radius)*Math.sin(timeInRadians);
 			Vector v = new Vector(x, 0, z);
 	        v = rotateAroundAxisZ(v, 90);

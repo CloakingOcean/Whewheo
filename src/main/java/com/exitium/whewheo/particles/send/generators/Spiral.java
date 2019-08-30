@@ -1,16 +1,14 @@
 package com.exitium.whewheo.particles.send.generators;
 
+import com.exitium.whewheo.init.ServerSelectionHandler;
+import com.exitium.whewheo.particles.ParticleEffect;
+import com.exitium.whewheo.particles.send.SendParticleGenerator;
+import com.exitium.whewheo.teleportobjects.WarpTP;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
-
-import com.exitium.whewheo.Main;
-import com.exitium.whewheo.init.ServerSelectionHandler;
-import com.exitium.whewheo.particles.ParticleEffect;
-import com.exitium.whewheo.particles.ParticleGenerator;
-import com.exitium.whewheo.particles.send.SendParticleGenerator;
-import com.exitium.whewheo.teleportobjects.WarpTP;
 
 /**
  * This is a Send Generator class
@@ -36,8 +34,6 @@ public class Spiral extends SendParticleGenerator{
 			if (ServerSelectionHandler.teleportingPlayers.contains(player.getUniqueId().toString())) {
 				
 				Location loc = player.getLocation();
-				
-				int count = 1;
 				
 				timeInRadians = timeInRadians + Math.PI/8;
 				

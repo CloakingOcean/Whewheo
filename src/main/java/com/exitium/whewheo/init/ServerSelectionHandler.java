@@ -460,8 +460,6 @@ public class ServerSelectionHandler implements Listener {
 
 	/** Updates the Lore of items and also requests the player count of a specified server.*/
 	public static void updatePlaceHolders(Player player) {
-		ArrayList<String> preivouslyRequested = new ArrayList<String>();
-		
 		
 		for (WarpTP warp : ConfigLoader.warps.values()) {
 			ArrayList<String> previouslyRequested = new ArrayList<String>();
