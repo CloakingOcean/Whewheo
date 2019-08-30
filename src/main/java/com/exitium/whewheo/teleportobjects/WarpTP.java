@@ -11,8 +11,7 @@ import com.exitium.whewheo.particles.send.ValidSendGenerators;
 /**
  * Wrapper class for warp teleport information.
  * 
- * @author Cloaking_Ocean
- * date Mar 26, 2017
+ * @author Cloaking_Ocean date Mar 26, 2017
  * @version 1.0
  */
 public class WarpTP {
@@ -30,9 +29,10 @@ public class WarpTP {
 	private List<String> commands;
 	private ValidSendGenerators send;
 	private ValidReceiveGenerators receive;
-	
-	
-	public WarpTP(int id, String name, String serverName, Location location, int slot, String material, Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands, ValidSendGenerators send, ValidReceiveGenerators receive) {
+
+	public WarpTP(int id, String name, String serverName, Location location, int slot, String material,
+			Enchantment enchantment, int quantity, List<String> lore, boolean enableCommands, List<String> commands,
+			ValidSendGenerators send, ValidReceiveGenerators receive) {
 		this.id = id;
 		this.name = name;
 		this.setServerName(serverName);
@@ -47,42 +47,42 @@ public class WarpTP {
 		this.setSend(send);
 		this.setReceive(receive);
 	}
-	
+
 	/**
 	 * @return the id
 	 */
 	public int getId() {
 		return id;
 	}
-	
+
 	/**
 	 * @param id the id to set
 	 */
 	public void setId(int id) {
 		this.id = id;
 	}
-	
+
 	/**
 	 * @return the name
 	 */
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	/**
 	 * @return the location
 	 */
 	public Location getLocation() {
 		return location;
 	}
-	
+
 	/**
 	 * @param location the location to set
 	 */
