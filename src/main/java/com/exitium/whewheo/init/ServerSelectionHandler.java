@@ -320,7 +320,7 @@ public class ServerSelectionHandler implements Listener {
 						if (warp.getCommands() != null) {
 							if (warp.getCommands().isEmpty() == false) {
 								for (String command : warp.getCommands()) {
-									if (command.contains("%player")) {
+									if (command.contains("%player%")) {
 										command = command.replace("%player%", player.getName());
 									}
 
