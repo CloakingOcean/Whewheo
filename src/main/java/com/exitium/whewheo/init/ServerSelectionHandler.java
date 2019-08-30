@@ -460,26 +460,6 @@ public class ServerSelectionHandler implements Listener {
 			}
 
 			warp.setLore(lore);
-
-			// boolean containsPlaceHolders = false;
-			//
-			// for (String s : warp.getLore()) {
-			// if (s.contains("%count%") || s.contains("%player%")) {
-			// containsPlaceHolders = true;
-			// }
-			// }
-			//
-			// if (containsPlaceHolders) {
-			// List<String> temporaryLore = new ArrayList<String>();
-			//
-			// for (String lore : warp.getLore()) {
-			// temporaryLore.add(lore.replace("%player%", player.getName()));
-			// }
-			//
-			// warp.setLore(temporaryLore);
-			// }
-			//
-			// requestPlayerCount(warp.getServerName(), player);
 		}
 
 	}
@@ -498,24 +478,4 @@ public class ServerSelectionHandler implements Listener {
 		player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
 
 	}
-
-	// /** Gets a loaded server item from the name of the server*/
-	// public static ItemStack getWarpItemFromName(String name) {
-	// for (ItemStack item : warpItems.keySet()) {
-	// if (warpItems.get(item).getServerName().equals(name)) {
-	// return item;
-	// }
-	// }
-	// return null;
-	// }
-	//
-	// /** Gets the ServerTP object from the name of the server*/
-	// public static WarpTP getWarpFromName(String name) {
-	// for (WarpTP warp : warpItems.values()) {
-	// if (warp.getServerName().equals(name)) {
-	// return warp;
-	// }
-	// }
-	// return null;
-	// }
 }
