@@ -1,6 +1,0 @@
-name: Whewheo
-main: com.exitium.whewheo.Main
-version: 1.0
-description: GUI Teleporting Plugin For Warps And Across Servers.
-commands:
-  ww:
