@@ -98,7 +98,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		// Instantiates a new Config Loader to store information from the config
 		new ConfigLoader();
 
-		// REgister listeners for ServerSelectionHandler.
+		// Register listeners for ServerSelectionHandler.
 		Bukkit.getPluginManager().registerEvents(new ServerSelectionHandler(), this);
 
 		// Sets command "/ww"'s executor to Commands.
