@@ -1,0 +1,27 @@
+warpSelector:
+  itemOnJoin: true
+  name: '&b&lWarp Selector'
+  material: '345:0'
+  slot: 0
+  enchantment: 'null'
+  quantity: 1
+  lore:
+  - 'Click to Select a Warp!'
+  rightClick: true
+  leftClick: true
+warpMenu:
+  name: '&8&lWarp Selector'
+  size: 45
+general:
+  teleportDelay: 3
+  prefix: '&b[&9Whewheo&b]&7'
+  bungeecordFolder: 'C:\Users\Shawn Whitaker\Documents\SpigotPlugins\1.11 Testing Server\BungeeCord'
+messages:
+  reloadedConfig: "Successfully reloaded config"
+  createdWarp: "You have successfully added a new warp. Please update the slot and other related information in the menu.yml"
+  warpAlreadyExists: "That warp already exists"
+  warpAlreadyEnabled: "This warp is already enabled!"
+  enabledWarp: "Enabled Warp"
+  noWarpsSaved: "No warps have been saved yet"
+  teleportationCancelled: "Teleportation Cancelled"
+  teleportationWillCommenceIn: "Teleportation will commence in %time%"
