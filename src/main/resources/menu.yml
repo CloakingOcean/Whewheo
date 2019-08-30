@@ -1,0 +1,20 @@
+warps:
+  '1':
+    name: sample
+    location: lobby:world:0:70:0
+    enabled: true
+    slot: 0
+    material: '341:0'
+    enchantment: 'null'
+    quantity: 1
+    lore:
+    - ''
+    - '&eThis is an'
+    - '&eexample lore.'
+    - '&aPlayers Online: &e%count%'
+    enableCommands: true
+    commands:
+    - 'p:help'
+    - 's:say %player% has teleported'
+    sendEffect: SPIRAL
+    receiveEffect: EMERALD
