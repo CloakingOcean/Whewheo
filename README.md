@@ -450,3 +450,7 @@ public static SendParticleGenerator getSendGeneratorFromEnum(ValidSendGenerators
 ```
 
 </details>
+
+## UML Diagram
+
+![alt text](https://i.imgur.com/ExkeOXi.png "Whewheo UML Diagram")
