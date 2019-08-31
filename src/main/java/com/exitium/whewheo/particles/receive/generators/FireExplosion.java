@@ -4,7 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-import com.exitium.whewheo.particles.ParticleEffect;
+import com.exitium.whewheo.particles.util.ParticleEffect;
 import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
 
 /**

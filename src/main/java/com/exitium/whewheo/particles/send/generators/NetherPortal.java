@@ -1,7 +1,7 @@
 package com.exitium.whewheo.particles.send.generators;
 
 import com.exitium.whewheo.init.ServerSelectionHandler;
-import com.exitium.whewheo.particles.ParticleEffect;
+import com.exitium.whewheo.particles.util.ParticleEffect;
 import com.exitium.whewheo.particles.send.SendParticleGenerator;
 import com.exitium.whewheo.teleportobjects.WarpTP;
 
