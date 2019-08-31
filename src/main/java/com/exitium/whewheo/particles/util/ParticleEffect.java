@@ -1,4 +1,4 @@
-package com.exitium.whewheo.particles;
+package com.exitium.whewheo.particles.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.exitium.whewheo.particles.ReflectionUtils.PackageType;
+import com.exitium.whewheo.particles.util.ReflectionUtils.PackageType;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
