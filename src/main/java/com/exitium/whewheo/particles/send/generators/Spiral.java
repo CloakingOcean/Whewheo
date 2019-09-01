@@ -1,8 +1,10 @@
 package com.exitium.whewheo.particles.send.generators;
 
+import com.exitium.whewheo.Main;
+import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.init.ServerSelectionHandler;
-import com.exitium.whewheo.particles.util.ParticleEffect;
 import com.exitium.whewheo.particles.send.SendParticleGenerator;
+import com.exitium.whewheo.particles.util.ParticleEffect;
 import com.exitium.whewheo.teleportobjects.WarpTP;
 
 import org.bukkit.Bukkit;
@@ -22,8 +24,12 @@ public class Spiral extends SendParticleGenerator {
 
 	private double radius = 1;
 
-	public Spiral(Player player, WarpTP warp) {
-		super(player, 1, warp);
+	private ConfigLoader configLoader;
+	private Main main;
+	private ServerSelectionHandler serverSel;
+
+	public Spiral(Player player, WarpTP warp, ConfigLoader configLoader, Main main, ServerSelectionHandler serverSel) {
+		super(player, 1, warp, configLoader, main, serverSel);
 
 		Bukkit.getServer().getLogger().info("A spiral is loading up");
 	}
@@ -31,7 +37,7 @@ public class Spiral extends SendParticleGenerator {
 	@Override
 	public void run() {
 		if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null) {
-			if (ServerSelectionHandler.teleportingPlayers.contains(player.getUniqueId().toString())) {
+			if (serverSel.containsTeleportingPlayer(player.getUniqueId().toString())) {
 
 				Location loc = player.getLocation();
 
@@ -93,7 +99,7 @@ public class Spiral extends SendParticleGenerator {
 
 			secondsPassed += (1.0 / 20.0);
 		} else {
-			ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+			serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 			cancel();
 		}
 	}

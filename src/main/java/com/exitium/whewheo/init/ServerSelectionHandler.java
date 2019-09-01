@@ -10,8 +10,6 @@ import com.exitium.whewheo.particles.ParticleGenerator;
 import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
 import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
 import com.exitium.whewheo.teleportobjects.WarpTP;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -46,21 +44,24 @@ public class ServerSelectionHandler implements Listener {
 	 * ORGANIZATIONAL PURPOSES.
 	 */
 
-	public static Inventory warps;
+	private Inventory warps;
 	// Items
-	private static ItemStack warpSelector;
-
+	private ItemStack warpSelector;
 	// Links the itemstack to the server name
-	public static HashMap<ItemStack, WarpTP> warpItems;
+	private HashMap<ItemStack, WarpTP> warpItems;
+	private List<String> teleportingPlayers;
 
-	public static List<String> teleportingPlayers;
+	private ConfigLoader configLoader;
+	private Main main;
 
-	public ServerSelectionHandler(HashMap<String, WarpTP> warps) {
+	public ServerSelectionHandler(HashMap<String, WarpTP> warps, ConfigLoader configLoader, Main main) {
+		this.configLoader = configLoader;
+		this.main = main;
 		init();
 	}
 
 	/** Initializes the components for the ServerSelectionHandler class */
-	public static void init() {
+	public void init() {
 		warpItems = new HashMap<ItemStack, WarpTP>();
 
 		teleportingPlayers = new ArrayList<String>();
@@ -70,24 +71,24 @@ public class ServerSelectionHandler implements Listener {
 	}
 
 	/** Creates items from the loaded warps and servers objects */
-	public static void setupItems() {
-		if (Main.config.contains("warpSelector")) {
-			if (Main.config.getConfigurationSection("warpSelector").contains("name")
-					&& Main.config.getConfigurationSection("warpSelector").contains("material")
-					&& Main.config.getConfigurationSection("warpSelector").contains("enchantment")
-					&& Main.config.getConfigurationSection("warpSelector").contains("quantity")
-					&& Main.config.getConfigurationSection("warpSelector").contains("lore")) {
+	public void setupItems() {
+		if (this.configLoader.getConfig().contains("warpSelector")) {
+			if (this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("name")
+					&& this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("material")
+					&& this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("enchantment")
+					&& this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("quantity")
+					&& this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("lore")) {
 
-				warpSelector = ConfigLoader.getItemStackFromId(Main.config.getString("warpSelector.material"),
-						Main.config.getInt("warpSelector.quantity"));
+				warpSelector = ConfigLoader.getItemStackFromId(this.configLoader.getConfig().getString("warpSelector.material"),
+						this.configLoader.getConfig().getInt("warpSelector.quantity"));
 				ItemMeta warpSelectorMeta = warpSelector.getItemMeta();
-				warpSelectorMeta.setDisplayName(ConfigLoader.getColoredTextFromConfig("warpSelector.name"));
-				if (!Main.config.getString("warpSelector.enchantment").equals("null"))
+				warpSelectorMeta.setDisplayName(this.configLoader.getColoredTextFromConfig("warpSelector.name"));
+				if (!this.configLoader.getConfig().getString("warpSelector.enchantment").equals("null"))
 					warpSelectorMeta.addEnchant(
-							Enchantment.getByName(Main.config.getString("warpSelector.enchantment")), 1, false);
+							Enchantment.getByName(this.configLoader.getConfig().getString("warpSelector.enchantment")), 1, false);
 
 				List<String> lore = new ArrayList<String>();
-				for (String l : Main.config.getStringList("warpSelector.lore")) {
+				for (String l : this.configLoader.getConfig().getStringList("warpSelector.lore")) {
 					if (l.contains("&")) {
 						lore.add(ChatColor.translateAlternateColorCodes('&', l));
 					} else {
@@ -110,17 +111,17 @@ public class ServerSelectionHandler implements Listener {
 	}
 
 	/** Loads the created warps items into the appropriate inventories */
-	public static void setupInventories() {
+	public void setupInventories() {
 
-		if (Main.config.contains("warpMenu")) {
-			if (Main.config.getConfigurationSection("warpMenu").contains("size")
-					&& Main.config.getConfigurationSection("warpMenu").contains("name")) {
-				int size = Main.config.getInt("warpMenu.size");
+		if (this.configLoader.getConfig().contains("warpMenu")) {
+			if (this.configLoader.getConfig().getConfigurationSection("warpMenu").contains("size")
+					&& this.configLoader.getConfig().getConfigurationSection("warpMenu").contains("name")) {
+				int size = this.configLoader.getConfig().getInt("warpMenu.size");
 				if (size > 54)
 					size = 54;
-				warps = Bukkit.createInventory(null, size, ConfigLoader.getColoredTextFromConfig("warpMenu.name"));
+				warps = Bukkit.createInventory(null, size, this.configLoader.getColoredTextFromConfig("warpMenu.name"));
 
-				for (WarpTP warp : ConfigLoader.warps.values()) {
+				for (WarpTP warp : this.configLoader.getWarps().values()) {
 
 					ItemStack warpItem = ConfigLoader.getItemStackFromId(warp.getMaterial(), warp.getQuantity());
 					ItemMeta warpItemMeta = warpItem.getItemMeta();
@@ -179,11 +180,11 @@ public class ServerSelectionHandler implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 
-		receivedPlayersIf: if (Main.getSentPlayersConfig().contains(event.getPlayer().getUniqueId().toString())) {
+		receivedPlayersIf: if (this.configLoader.getSentPlayersConfig().contains(event.getPlayer().getUniqueId().toString())) {
 			// Sent from a Server with this plugin
 			Bukkit.getServer().getLogger().info("A ReceivedPlayer joined. Removing him from the list");
 
-			FileConfiguration fc = Main.getSentPlayersConfig();
+			FileConfiguration fc = this.configLoader.getSentPlayersConfig();
 			String message = fc.getString(event.getPlayer().getUniqueId().toString());
 
 			if (message.contains(":")) {
@@ -228,12 +229,12 @@ public class ServerSelectionHandler implements Listener {
 
 			}
 			fc.set(event.getPlayer().getUniqueId().toString(), null);
-			Main.saveSentPlayersConfig();
+			this.configLoader.saveSentPlayersConfig();
 		}
 
-		if (Main.serverName == null) {
+		if (main.getServerName() == null) {
 
-			ServerNameGetter sng = new ServerNameGetter(event.getPlayer());
+			ServerNameGetter sng = new ServerNameGetter(event.getPlayer(), main);
 			int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, sng, (long) 40L,
 					(long) 1L);
 			sng.setThreadId(threadId);
@@ -241,12 +242,12 @@ public class ServerSelectionHandler implements Listener {
 
 		if (warpSelector != null) {
 
-			if (Main.config.contains("warpSelector")) {
+			if (this.configLoader.getConfig().contains("warpSelector")) {
 
-				if (Main.config.getConfigurationSection("warpSelector").contains("itemOnJoin")
-						&& Main.config.getConfigurationSection("warpSelector").contains("slot")) {
+				if (this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("itemOnJoin")
+						&& this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("slot")) {
 
-					if (Main.config.getBoolean("warpSelector.itemOnJoin")) {
+					if (this.configLoader.getConfig().getBoolean("warpSelector.itemOnJoin")) {
 						// Config Checks
 
 						if (!event.getPlayer().getInventory().contains(warpSelector)) { // If the player doesn't have
@@ -254,7 +255,7 @@ public class ServerSelectionHandler implements Listener {
 																						// already
 
 							Inventory pInv = event.getPlayer().getInventory();
-							int slot = Main.config.getInt("warpSelector.slot");
+							int slot = this.configLoader.getConfig().getInt("warpSelector.slot");
 							ItemStack itemInSlot = pInv.getItem(slot);
 
 							if (itemInSlot != null) {
@@ -367,7 +368,7 @@ public class ServerSelectionHandler implements Listener {
 			if (!(event.getTo().getBlockX() == event.getFrom().getBlockX()
 					&& event.getTo().getBlockZ() == event.getFrom().getBlockZ()
 					&& event.getTo().getBlockY() == event.getFrom().getBlockY())) {
-				event.getPlayer().sendMessage(Main.prefix + Main.msg("teleportationCancelled"));
+				event.getPlayer().sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("teleportationCancelled"));
 				teleportingPlayers.remove(event.getPlayer().getUniqueId().toString());
 			}
 		}
@@ -384,11 +385,11 @@ public class ServerSelectionHandler implements Listener {
 
 					Action action = event.getAction();
 
-					if (Main.config.contains("warpSelector")) {
-						if (Main.config.getConfigurationSection("warpSelector").contains("rightClick")
-								&& Main.config.getConfigurationSection("warpSelector").contains("leftClick")) {
+					if (this.configLoader.getConfig().contains("warpSelector")) {
+						if (this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("rightClick")
+								&& this.configLoader.getConfig().getConfigurationSection("warpSelector").contains("leftClick")) {
 
-							if (Main.config.getBoolean("warpSelector.rightClick")) {
+							if (this.configLoader.getConfig().getBoolean("warpSelector.rightClick")) {
 								if (action.equals(Action.RIGHT_CLICK_AIR) || action.equals(Action.RIGHT_CLICK_BLOCK)) {
 									event.setCancelled(true);
 
@@ -398,7 +399,7 @@ public class ServerSelectionHandler implements Listener {
 								}
 							}
 
-							if (Main.config.getBoolean("warpSelector.leftClick")) {
+							if (this.configLoader.getConfig().getBoolean("warpSelector.leftClick")) {
 								if (action.equals(Action.LEFT_CLICK_AIR) || action.equals(Action.LEFT_CLICK_BLOCK)) {
 									event.setCancelled(true);
 									updatePlaceHolders(event.getPlayer());
@@ -443,5 +444,17 @@ public class ServerSelectionHandler implements Listener {
 
 		//TODO: LOOP THROUGH WAPRS AND RUN COMMAND UPDATE PLACE HOLDERS
 
+	}
+
+	public void addTeleportingPlayer(String uuid) {
+		teleportingPlayers.add(uuid);
+	}
+
+	public void removeTeleportingPlayer(String uuid) {
+		teleportingPlayers.remove(uuid);
+	}
+
+	public boolean containsTeleportingPlayer(String uuid) {
+		return teleportingPlayers.contains(uuid);
 	}
 }

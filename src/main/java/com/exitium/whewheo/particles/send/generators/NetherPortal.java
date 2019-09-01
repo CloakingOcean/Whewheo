@@ -1,8 +1,10 @@
 package com.exitium.whewheo.particles.send.generators;
 
+import com.exitium.whewheo.Main;
+import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.init.ServerSelectionHandler;
-import com.exitium.whewheo.particles.util.ParticleEffect;
 import com.exitium.whewheo.particles.send.SendParticleGenerator;
+import com.exitium.whewheo.particles.util.ParticleEffect;
 import com.exitium.whewheo.teleportobjects.WarpTP;
 
 import org.bukkit.Bukkit;
@@ -23,18 +25,22 @@ public class NetherPortal extends SendParticleGenerator {
 	private int width = 2;
 	final private double space = .4;
 
+	private ConfigLoader configLoader;
+	private ServerSelectionHandler serverSel;
+	private Main main;
+
 	// Remember to go up from the players location because the player's location
 	// refers to the bottom of their feet.
 
-	public NetherPortal(Player player, WarpTP warp) {
-		super(player, 1, warp);
+	public NetherPortal(Player player, WarpTP warp, ConfigLoader configLoader, Main main, ServerSelectionHandler serverSel) {
+		super(player, 1, warp, configLoader, main, serverSel);
 	}
 
 	@Override
 	public void run() {
 
 		if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null) {
-			if (ServerSelectionHandler.teleportingPlayers.contains(player.getUniqueId().toString())) {
+			if (serverSel.containsTeleportingPlayer(player.getUniqueId().toString())) {
 				Location loc = player.getLocation();
 				for (double r = (width / 2) * -1; r < (width / 2); r += space) {
 					for (double c = (height / 2) * -1; c < (height / 2); c += space) {
@@ -89,7 +95,7 @@ public class NetherPortal extends SendParticleGenerator {
 
 			secondsPassed += ((double) 1) / ((double) 20);
 		} else {
-			ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+			serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 			cancel();
 		}
 	}

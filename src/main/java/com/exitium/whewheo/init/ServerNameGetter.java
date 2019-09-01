@@ -20,11 +20,14 @@ public class ServerNameGetter implements Runnable {
 
 	// Thread id of this current thread
 	private int threadId;
-	private boolean completed = false;
 
-	public ServerNameGetter(Player player) {
+	private Main main;
+
+	public ServerNameGetter(Player player, Main main) {
 		threadId = 0;
 		this.player = player;
+
+		this.main = main;
 	}
 
 	/**
@@ -34,30 +37,29 @@ public class ServerNameGetter implements Runnable {
 	 */
 	@Override
 	public void run() {
-		if (threadId != 0) {
-			if (Main.serverName == null) {
-				Bukkit.getServer().getLogger().severe("ServerName == null");
-				if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null) {
-					Bukkit.getServer().getLogger().info("Player is online now at this point!");
-
-					ByteArrayDataOutput out = ByteStreams.newDataOutput();
-					out.writeUTF("GetServer"); // Set channel to GetServer
-
-					player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
-					Bukkit.getServer().getLogger().info("Sending request!");
-					completed = true;
-					Bukkit.getServer().getLogger().info("Completed is now true!");
-
-				}
-			} else {
-				Bukkit.getServer().getScheduler().cancelTask(threadId);
-			}
+		if (threadId == 0) {
+			return;
 		}
 
-		if (completed) {
-			Bukkit.getServer().getLogger().info("Cancelling Thread!");
+		if (main.getServerName() != null) {
 			Bukkit.getServer().getScheduler().cancelTask(threadId);
+			return;
 		}
+
+		Bukkit.getServer().getLogger().severe("ServerName has not been defined yet.");
+		if (Bukkit.getServer().getPlayer(player.getUniqueId()) == null) {
+			return;
+		}
+
+		Bukkit.getServer().getLogger().info("Player is online now at this point!");
+
+		ByteArrayDataOutput out = ByteStreams.newDataOutput();
+		out.writeUTF("GetServer"); // Set channel to GetServer
+
+		player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
+		Bukkit.getServer().getLogger().info("Sending request!");
+		Bukkit.getServer().getLogger().info("Cancelling Thread!");
+		Bukkit.getServer().getScheduler().cancelTask(threadId);
 	}
 
 	/**

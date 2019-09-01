@@ -1,6 +1,7 @@
 package com.exitium.whewheo.particles.send;
 
 import com.exitium.whewheo.Main;
+import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.init.ServerSelectionHandler;
 import com.exitium.whewheo.particles.ParticleGenerator;
 import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
@@ -26,25 +27,32 @@ public class SendParticleGenerator extends ParticleGenerator {
 	public static double delay;
 	protected int currentSecond = -1;
 
-	public SendParticleGenerator(Player player, int tickDelay, WarpTP warp) {
+	private ConfigLoader configLoader;
+	private Main main;
+	private ServerSelectionHandler serverSel;
+
+	public SendParticleGenerator(Player player, int tickDelay, WarpTP warp, ConfigLoader configLoader, Main main, ServerSelectionHandler serverSel) {
 		super(player, tickDelay);
+
+		this.configLoader = configLoader;
+		this.main = main;
+		this.serverSel = serverSel;
 
 		this.warp = warp;
 
-		if (Main.config.contains("general")) {
-			if (Main.config.getConfigurationSection("general").contains("teleportDelay")) {
-				delay = Main.config.getInt("general.teleportDelay");
-				;
-			} else {
-				Bukkit.getServer().getLogger().severe(
-						"Couldn't load SendParticleGeneartors because there is no \"teleportDelay\" section in config.");
-				delay = -1;
-			}
-		} else {
+		if (!this.configLoader.getConfig().contains("general")) {
 			Bukkit.getServer().getLogger()
 					.severe("Couldn't load SendParticleGeneartors because there is no \"general\" section in config.");
 			delay = -1;
 		}
+
+		if (!this.configLoader.getConfig().getConfigurationSection("general").contains("teleportDelay")) {
+			Bukkit.getServer().getLogger().severe(
+					"Couldn't load SendParticleGeneartors because there is no \"teleportDelay\" section in config.");
+			delay = -1;
+		}
+
+		delay = this.configLoader.getConfig().getInt("general.teleportDelay");
 	}
 
 	protected void handleLocationDetails(Player player) {
@@ -61,21 +69,21 @@ public class SendParticleGenerator extends ParticleGenerator {
 		if (secondsPassed < delay) {
 			if (currentSecond < (int) secondsPassed) {
 				currentSecond = (int) secondsPassed;
-				player.sendMessage(Main.prefix + Main.msg("teleportationWillCommenceIn").replace("%time%",
+				player.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("teleportationWillCommenceIn").replace("%time%",
 						((int) (delay - currentSecond)) + ""));
 			}
 			currentSecond = (int) secondsPassed;
 		} else {
-			if (warp.getServerName().equals(Main.serverName)) {
+			if (warp.getServerName().equals(main.getServerName())) {
 				Main.centeredTP(player, warp.getLocation());
 				player.closeInventory();
 
 				ParticleGenerator generator = getGenerator(player, warp);
 				generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
 
-				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+				serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 			} else {
-				ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+				serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 				handleLocationDetails(player);
 			}
 			cancel();
@@ -84,7 +92,7 @@ public class SendParticleGenerator extends ParticleGenerator {
 	}
 
 	protected void sendPlayerToServer(Player player, ValidReceiveGenerators generator) {
-		ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+		serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 
 		addPlayerInformation(player, generator);
 
@@ -92,7 +100,7 @@ public class SendParticleGenerator extends ParticleGenerator {
 	}
 
 	protected void sendPlayerToServer(Player player, Location loc, ValidReceiveGenerators generator) {
-		ServerSelectionHandler.teleportingPlayers.remove(player.getUniqueId().toString());
+		serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 
 		addPlayerInformation(player, loc, generator);
 
@@ -100,24 +108,24 @@ public class SendParticleGenerator extends ParticleGenerator {
 	}
 
 	private void addPlayerInformation(Player player, Location loc, ValidReceiveGenerators generator) {
-		if (Main.getSentPlayersConfig().contains(player.getUniqueId().toString())) {
+		if (this.configLoader.getSentPlayersConfig().contains(player.getUniqueId().toString())) {
 			Bukkit.getServer().getLogger().severe("Left over information inside the sentplayers.yml!");
 		}
 
-		FileConfiguration fc = Main.getSentPlayersConfig();
+		FileConfiguration fc = this.configLoader.getSentPlayersConfig();
 		fc.set(player.getUniqueId().toString(), loc.getWorld().getName() + ":" + loc.getBlockX() + ":" + loc.getBlockY()
 				+ ":" + loc.getBlockZ() + ":" + generator.name());
-		Main.saveSentPlayersConfig();
+		this.configLoader.saveSentPlayersConfig();
 	}
 
 	private void addPlayerInformation(Player player, ValidReceiveGenerators generator) {
-		if (Main.getSentPlayersConfig().contains(player.getUniqueId().toString())) {
+		if (this.configLoader.getSentPlayersConfig().contains(player.getUniqueId().toString())) {
 			Bukkit.getServer().getLogger().severe("Left over information inside the sentplayers.yml!");
 		}
 
-		FileConfiguration fc = Main.getSentPlayersConfig();
+		FileConfiguration fc = this.configLoader.getSentPlayersConfig();
 		fc.set(player.getUniqueId().toString(), generator.name());
-		Main.saveSentPlayersConfig();
+		this.configLoader.saveSentPlayersConfig();
 	}
 
 	@Override

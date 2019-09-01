@@ -2,8 +2,6 @@ package com.exitium.whewheo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import com.exitium.whewheo.commands.Commands;
@@ -25,8 +23,6 @@ import com.google.common.io.ByteStreams;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -40,22 +36,10 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
  * @author Cloaking_Ocean date Mar 26, 2017
  * @version 1.0
  */
-public class Main extends JavaPlugin implements PluginMessageListener {
-
-	// Plugin's Config File Reference.
-	public static FileConfiguration config;
-	public static File configFile;
-
-	// Plugin's Menu File Reference.
-	// (Used to store valid servers and warps)
-	public static FileConfiguration menuConfig;
-	public static File menuFile;
-
-	private static FileConfiguration sentPlayersConfig;
-	private static File sentPlayersFile;
+public class Main extends JavaPlugin implements PluginMessageListener { 
 
 	// Server name returned by Bungeecord's Proxy.
-	public static String serverName;
+	private String serverName;
 
 	// Public static instance of the Main class for easier access.
 	public static Main instance;
@@ -63,48 +47,26 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	/*
 	 * Permissions
 	 */
-	private static String superPerm = "whewheo.";
-	public static Permission createWarp = new Permission(superPerm + "createwarp");
-	public static Permission enableWarp = new Permission(superPerm + "enablewarp");
-	public static Permission reload = new Permission(superPerm + "reload");
-	public static Permission open = new Permission(superPerm + "open");
-
-	public static String prefix = "";
 
 	private ConfigLoader configLoader;
 
 	/** Runs on server startup. */
 	@Override
 	public void onEnable() {
-		// Sets the public static instance of Main to this instance.
-		instance = this;
 
-		// Initiates the config variables and copies the files if none exist.
-		initiateConfigFiles();
-
-		if (Main.config.contains("general")) {
-			if (Main.config.getConfigurationSection("general").contains("prefix")) {
-				prefix = ChatColor.translateAlternateColorCodes('&', Main.config.getString("general.prefix")) + " ";
-			} else {
-				Bukkit.getServer().getLogger().severe("Couldn't find \"prefix\" in general");
-			}
-		} else {
-			Bukkit.getServer().getLogger().severe("Couldn't find \"general\" in config");
-		}
+		// Instantiates a new Config Loader to store information from the config
+		this.configLoader = new ConfigLoader(this);
 
 		// Register Outgoing and Incoming Plugin Channel for BungeeCord to request the
 		// server name and player count.
 		Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
 
-		// Instantiates a new Config Loader to store information from the config
-		this.configLoader = new ConfigLoader();
-
 		// Register listeners for ServerSelectionHandler.
 		Bukkit.getPluginManager().registerEvents(new ServerSelectionHandler(this.configLoader.getWarps()), this);
 
 		// Sets command "/ww"'s executor to Commands.
-		getCommand("ww").setExecutor(new Commands());
+		getCommand("ww").setExecutor(new Commands(this.configLoader));
 
 		// Attempts to get the server name from the bungeecord proxy if a player is
 		// online.
@@ -115,71 +77,6 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 
 			Bukkit.getServer().getOnlinePlayers().iterator().next().sendPluginMessage(Main.instance, "BungeeCord",
 					out.toByteArray()); // Get an online player to send the Plugin Message through.
-		}
-	}
-
-	/** Initiates the config variables and copies the file if no exist. */
-	public void initiateConfigFiles() {
-		// Initiate and copy config file.
-		configFile = new File(getDataFolder(), "config.yml");
-		config = getConfig();
-
-		getConfig().options().copyDefaults(true);
-		saveConfig();
-
-		// Initiate and copy menu file.
-
-		menuFile = new File(getDataFolder(), "menu.yml");
-
-		if (!menuFile.exists()) {
-			saveResource("menu.yml", false);
-		}
-
-		menuConfig = YamlConfiguration.loadConfiguration(menuFile);
-
-		menuConfig.options().copyDefaults(true);
-		saveMenuConfig();
-
-		Bukkit.getServer().getLogger().info("BungeeCord Folder: " + (config.getString("general.bungeecordFolder")));
-		sentPlayersFile = new File(config.getString("general.bungeecordFolder"), "sentplayers.yml");
-		Bukkit.getServer().getLogger().info("Sent Players File Path: " + sentPlayersFile.getPath());
-
-		sentPlayersConfig = YamlConfiguration.loadConfiguration(sentPlayersFile);
-	}
-
-	/** Attempts to save the config. If unsuccessful, it prints an error message. */
-	public static void saveConfigFile() {
-		try {
-			config.save(configFile);
-		} catch (IOException e) {
-			Bukkit.getServer().getLogger().severe(ChatColor.RED + "Error trying to save config. Contact Developer.");
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Attempts to save the menu configuration to the menu file. If unsuccessful, it
-	 * prints an error message.
-	 */
-	public static void saveMenuConfig() {
-		try {
-			menuConfig.save(menuFile);
-		} catch (IOException e) {
-			Bukkit.getServer().getLogger().severe(ChatColor.RED + "Error trying to save xp config. Contact Developer.");
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Attempts to save the sent players configuration to the menu file. If
-	 * unsuccessful, it prints an error message.
-	 */
-	public static void saveSentPlayersConfig() {
-		try {
-			sentPlayersConfig.save(sentPlayersFile);
-		} catch (IOException e) {
-			Bukkit.getServer().getLogger().severe(ChatColor.RED + "Error trying to save xp config. Contact Developer.");
-			e.printStackTrace();
 		}
 	}
 
@@ -332,20 +229,6 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		}
 	}
 
-	/** Gets a specified message from the config */
-	public static String msg(String message) {
-		if (Main.config.contains("messages")) {
-			if (Main.config.getConfigurationSection("messages").contains(message)) {
-				return ChatColor.translateAlternateColorCodes('&', Main.config.getString("messages." + message));
-			} else {
-				Bukkit.getLogger().severe("Couldn't find \"" + message + "\" in messages");
-			}
-		} else {
-			Bukkit.getLogger().severe("Couldn't find \"messages\" in config");
-		}
-		return "";
-	}
-
 	public static SendParticleGenerator getSendGeneratorFromEnum(ValidSendGenerators generator, Player player,
 			WarpTP warp) {
 		switch (generator) {
@@ -374,15 +257,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		}
 	}
 
-	/**
-	 * @return the sentPlayersConfig
-	 */
-	public static FileConfiguration getSentPlayersConfig() {
-		sentPlayersConfig = YamlConfiguration.loadConfiguration(sentPlayersFile);
-		return sentPlayersConfig;
-	}
-
-	public ConfigLoader getConfigLoader() {
-		return this.configLoader;
+	public String getServerName() {
+		return serverName;
 	}
 }

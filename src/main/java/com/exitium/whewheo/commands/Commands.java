@@ -1,16 +1,13 @@
 package com.exitium.whewheo.commands;
 
-import java.util.Arrays;
-
-import com.exitium.whewheo.Main;
 import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.init.ServerSelectionHandler;
+import com.exitium.whewheo.util.Util;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 /**
@@ -27,6 +24,14 @@ import org.bukkit.entity.Player;
  */
 
 public class Commands implements CommandExecutor {
+
+	private ConfigLoader configLoader;
+	private ServerSelectionHandler serverSel;
+
+	public Commands(ConfigLoader configLoader, ServerSelectionHandler serverSel) {
+		this.configLoader = configLoader;
+		this.serverSel = serverSel;
+	}
 
 	/** Method that handles the /ww command */
 	@Override
@@ -49,19 +54,14 @@ public class Commands implements CommandExecutor {
 					return true;
 				} else if (args[0].equalsIgnoreCase("reload")) {
 					// Reload All Information
+					this.configLoader.reload();
 
-					Main.config = YamlConfiguration.loadConfiguration(Main.configFile);
-					Main.menuConfig = YamlConfiguration.loadConfiguration(Main.menuFile);
-					Main.saveConfigFile();
-					Main.saveMenuConfig();
-
-					ConfigLoader.init();
-					ServerSelectionHandler.init();
-					sender.sendMessage(Main.prefix + Main.msg("reloadedConfig"));
+					serverSel.init();
+					sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("reloadedConfig"));
 					return true;
 				} else if (args[0].equalsIgnoreCase("test")) {
 					sender.sendMessage("Sending received Players.");
-					for (String playerUUID : Main.getSentPlayersConfig().getKeys(false)) {
+					for (String playerUUID : this.configLoader.getSentPlayersConfig().getKeys(false)) {
 						sender.sendMessage("Player: " + playerUUID);
 					}
 				}
@@ -80,43 +80,26 @@ public class Commands implements CommandExecutor {
 						String warpName = args[1];
 						// Check to see if warp already exists
 
-						if (ConfigLoader.warps.containsKey(warpName)) {
+						if (this.configLoader.getWarps().containsKey(warpName)) {
 
-							sender.sendMessage(Main.prefix + Main.msg("warpAlreadyExists"));
+							sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("warpAlreadyExists"));
 							return true;
 						}
 
-						if (Main.menuConfig.contains("warps")) {
-							for (String key : Main.menuConfig.getConfigurationSection("warps").getKeys(false)) {
-								String name = Main.menuConfig.getString("warps." + key + ".name");
+						if (this.configLoader.getMenuConfig().contains("warps")) {
+							for (String key : this.configLoader.getMenuConfig().getConfigurationSection("warps").getKeys(false)) {
+								String name = this.configLoader.getMenuConfig().getString("warps." + key + ".name");
 
 								if (name.equals(warpName)) {
-									sender.sendMessage(Main.prefix + Main.msg("warpAlreadyExists"));
+									sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("warpAlreadyExists"));
 									return true;
 								}
 							}
 						}
 
-						int nextIndex = ConfigLoader.getNextWarpId();
+						this.configLoader.saveDefaultWarp(warpName, player);
 
-						Main.menuConfig.set("warps." + nextIndex + ".name", warpName);
-						Main.menuConfig.set("warps." + nextIndex + ".location",
-								Main.serverName + ":" + ConfigLoader.serializeLocation(player.getLocation()));
-						Main.menuConfig.set("warps." + nextIndex + ".enabled", false);
-
-						// Create Place Holders
-						Main.menuConfig.set("warps." + nextIndex + ".slot", -1);
-						Main.menuConfig.set("warps." + nextIndex + ".material", "341:0");
-						Main.menuConfig.set("warps." + nextIndex + ".enchantment", "null");
-						Main.menuConfig.set("warps." + nextIndex + ".quantity", 1);
-						Main.menuConfig.set("warps." + nextIndex + ".lore", Arrays.asList(""));
-						Main.menuConfig.set("warps." + nextIndex + ".enableCommands", true);
-						Main.menuConfig.set("warps." + nextIndex + ".commands", Arrays.asList(""));
-						Main.menuConfig.set("warps." + nextIndex + ".sendEffect", "SPIRAL");
-						Main.menuConfig.set("warps." + nextIndex + ".receiveEffect", "EMERALD");
-						Main.saveMenuConfig();
-
-						player.sendMessage(Main.prefix + Main.msg("createdWarp"));
+						player.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("createdWarp"));
 						return true;
 					} else {
 						// Sender is not a player
@@ -128,41 +111,41 @@ public class Commands implements CommandExecutor {
 					// If args[0] is enable "/ww enable <arg[1]>"
 					String warpName = args[1];
 
-					if (ConfigLoader.containsWarpName(warpName)) { // If the warp name is already loaded into the plugin
-						sender.sendMessage(Main.prefix + Main.msg("warpAlreadyEnabled"));
+					if (this.configLoader.containsWarpName(warpName)) { // If the warp name is already loaded into the plugin
+						sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("warpAlreadyEnabled"));
 						return true;
 					} // Otherwise, create the new warp
 
-					if (Main.menuConfig.contains("warps")) {
-						for (String key : Main.menuConfig.getConfigurationSection("warps").getKeys(false)) {
+					if (this.configLoader.getMenuConfig().contains("warps")) {
+						for (String key : this.configLoader.getMenuConfig().getConfigurationSection("warps").getKeys(false)) {
 							// Iterating though all warp keys in config
 
-							if (Main.menuConfig.getConfigurationSection("warps." + key).contains("name")) {
+							if (this.configLoader.getMenuConfig().getConfigurationSection("warps." + key).contains("name")) {
 								// Configuration Check
 
-								if (Main.menuConfig.getString("warps." + key + ".name").equals(warpName)) {
+								if (this.configLoader.getMenuConfig().getString("warps." + key + ".name").equals(warpName)) {
 									// Determine Warp
 
-									if (Main.menuConfig.getConfigurationSection("warps." + key).contains("enabled")) {
+									if (this.configLoader.getMenuConfig().getConfigurationSection("warps." + key).contains("enabled")) {
 										// Configuration Check
 
-										if (Main.menuConfig.getBoolean("warps." + key + ".enabled")) { // Is enabled
-											sender.sendMessage(Main.prefix + Main.msg("warpAlreadyEnabled"));
+										if (this.configLoader.getMenuConfig().getBoolean("warps." + key + ".enabled")) { // Is enabled
+											sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("warpAlreadyEnabled"));
 											return true;
 										} else { // Is disabled
 
-											if (ConfigLoader.warpHasRequirements("warps." + key)) { // Check to see if
+											if (this.configLoader.warpHasRequirements("warps." + key)) { // Check to see if
 																									// it should be
 																									// enabled
 
 												// Add it to current loaded warps
-												ConfigLoader.addWarp(key);
+												this.configLoader.addWarp(key);
 
 												// Set enabled to true in config
-												Main.menuConfig.set("warps." + key + ".enabled", true);
-												Main.saveMenuConfig();
+												this.configLoader.getMenuConfig().set("warps." + key + ".enabled", true);
+												this.configLoader.saveMenuConfig();
 
-												sender.sendMessage(Main.prefix + Main.msg("enabledWarp"));
+												sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("enabledWarp"));
 											}
 
 										}
@@ -173,7 +156,7 @@ public class Commands implements CommandExecutor {
 
 						return true;
 					} else { // Couldn't find any warps
-						sender.sendMessage(Main.prefix + Main.msg("noWarpsSaved"));
+						sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("noWarpsSaved"));
 						return true;
 					}
 				}
@@ -203,15 +186,15 @@ public class Commands implements CommandExecutor {
 		sender.sendMessage(ChatColor.GREEN + "/ww" + ChatColor.WHITE + " | " + ChatColor.YELLOW
 				+ "Default command for Whewheo. Shows the help screen.");
 
-		if (sender.hasPermission(Main.createWarp))
+		if (sender.hasPermission(Util.createWarp))
 			sender.sendMessage(ChatColor.GREEN + "/ww create <warpName>" + ChatColor.WHITE + " | " + ChatColor.YELLOW
 					+ "Creates a new warp with the players current location.");
 
-		if (sender.hasPermission(Main.enableWarp))
+		if (sender.hasPermission(Util.enableWarp))
 			sender.sendMessage(ChatColor.GREEN + "/ww enable <warpName>" + ChatColor.WHITE + " | " + ChatColor.YELLOW
 					+ "Enables a disabled warp if all of the requirements are met.");
 
-		if (sender.hasPermission(Main.reload))
+		if (sender.hasPermission(Util.reload))
 			sender.sendMessage(ChatColor.GREEN + "/ww reload" + ChatColor.WHITE + " | " + ChatColor.YELLOW
 					+ "Reloads data from the config and menu files. Also resets items and inventories.");
 	}
