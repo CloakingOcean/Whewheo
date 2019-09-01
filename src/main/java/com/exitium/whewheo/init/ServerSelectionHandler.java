@@ -441,41 +441,7 @@ public class ServerSelectionHandler implements Listener {
 	 */
 	public static void updatePlaceHolders(Player player) {
 
-		for (WarpTP warp : ConfigLoader.warps.values()) {
-			ArrayList<String> previouslyRequested = new ArrayList<String>();
-
-			ArrayList<String> lore = new ArrayList<String>();
-
-			for (String s : warp.getLore()) {
-				// s = s.replace("%player%", player.getName());
-
-				if (s.contains("%count%")) {
-					if (!previouslyRequested.contains(warp.getServerName())) {
-						requestPlayerCount(warp.getServerName(), player);
-						previouslyRequested.add(warp.getServerName());
-					}
-				}
-
-				lore.add(s);
-			}
-
-			warp.setLore(lore);
-		}
-
-	}
-
-	/** Sends Bungeecord a request to get the playercount of a specific server */
-	public static void requestPlayerCount(String serverName, Player player) {
-		ByteArrayDataOutput out = ByteStreams.newDataOutput();
-
-		try {
-			out.writeUTF("PlayerCount");
-			out.writeUTF(serverName);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
+		//TODO: LOOP THROUGH WAPRS AND RUN COMMAND UPDATE PLACE HOLDERS
 
 	}
 }
