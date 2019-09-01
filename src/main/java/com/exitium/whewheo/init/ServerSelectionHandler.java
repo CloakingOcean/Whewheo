@@ -55,7 +55,7 @@ public class ServerSelectionHandler implements Listener {
 
 	public static List<String> teleportingPlayers;
 
-	public ServerSelectionHandler() {
+	public ServerSelectionHandler(HashMap<String, WarpTP> warps) {
 		init();
 	}
 

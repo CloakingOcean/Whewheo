@@ -1,8 +1,21 @@
 package com.exitium.whewheo.util;
 
-public class Util {
+import com.exitium.whewheo.Main;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 
-    /** Sends Bungeecord a request to get the playercount of a specific server */
+import org.bukkit.entity.Player;
+
+public final class Util {
+
+    private Util() {}
+
+    /***
+     * Sends a plugin message through given player for the PlayerCount.
+     * 
+     * @param serverName
+     * @param player
+     */
     public static void requestPlayerCount(String serverName, Player player) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
 

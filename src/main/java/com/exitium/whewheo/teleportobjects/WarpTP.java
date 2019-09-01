@@ -1,20 +1,19 @@
 package com.exitium.whewheo.teleportobjects;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
 import com.exitium.whewheo.particles.send.ValidSendGenerators;
+import com.exitium.whewheo.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 
 /**
  * Wrapper class for warp teleport information.
@@ -44,10 +43,10 @@ public class WarpTP {
 
 	public boolean load(ConfigurationSection section, String key) {
 		if (!section.getBoolean("enabled")) {
+			Bukkit.getServer().getLogger().info("Skipping warp " + key
+					+ " because it has not been enabled. Please configure the warp to use it.");
 			return false;
 		}
-
-
 
 		this.slot = section.getInt("slot");
 		if (slot == -1) {
@@ -78,6 +77,26 @@ public class WarpTP {
 		}
 
 		return true;
+	}
+
+	public void updatePlaceholders(Player player) {
+		ArrayList<String> previouslyRequested = new ArrayList<String>();
+		ArrayList<String> lore = new ArrayList<String>();
+
+		for (String s : this.lore) {
+			// s = s.replace("%player%", player.getName());
+
+			if (s.contains("%count%")) {
+				if (!previouslyRequested.contains(this.serverName)) {
+					Util.requestPlayerCount(this.serverName, player);
+					previouslyRequested.add(this.serverName);
+				}
+			}
+
+			lore.add(s);
+		}
+
+		this.lore = lore;
 	}
 
 	private void loadLocation(ConfigurationSection section, String key) {
@@ -152,26 +171,6 @@ public class WarpTP {
 			// Send to server with no extra teleportation
 			this.serverName = splitter[0];
 		}
-	}
-
-	private void updatePlaceholders(Player player) {
-		ArrayList<String> previouslyRequested = new ArrayList<String>();
-		ArrayList<String> lore = new ArrayList<String>();
-
-		for (String s : this.lore) {
-			// s = s.replace("%player%", player.getName());
-
-			if (s.contains("%count%")) {
-				if (!previouslyRequested.contains(this.serverName)) {
-					requestPlayerCount(this.serverName, player);
-					previouslyRequested.add(this.serverName);
-				}
-			}
-
-			lore.add(s);
-		}
-
-		this.lore = lore;
 	}
 
 	private int retrieveId(String key) {
