@@ -28,14 +28,14 @@ import org.bukkit.inventory.ItemStack;
 public class ConfigLoader {
 
 	// Enabled And Loaded Warps
-	public static HashMap<String, WarpTP> warps;
+	private HashMap<String, WarpTP> warps;
 
 	public ConfigLoader() {
 		init();
 	}
 
 	/** Initializes all of the components of the Config Loader class */
-	public static void init() {
+	public void init() {
 		resetSendGeneratorDelay();
 
 		warps = new HashMap<String, WarpTP>();
@@ -71,7 +71,7 @@ public class ConfigLoader {
 	 * Loops through all of the keys under "warps" and attempts to load them into
 	 * the plugin.
 	 */
-	private static void loadWarps() {
+	private void loadWarps() {
 		if (Main.menuConfig.contains("warps")) {
 			for (String key : Main.menuConfig.getConfigurationSection("warps").getKeys(false)) {
 				loadWarp(key);
@@ -84,7 +84,7 @@ public class ConfigLoader {
 	 * 
 	 * @param key warpName to load form
 	 */
-	public static void loadWarp(String key) {
+	public void loadWarp(String key) {
 
 
 		if (!warpHasRequirements("warps." + key)) {
@@ -182,7 +182,7 @@ public class ConfigLoader {
 	 * @param warpName Name of target warp
 	 * @return Whether or not a warp with that name is enabled.
 	 */
-	public static boolean containsWarpName(String warpName) {
+	public boolean containsWarpName(String warpName) {
 		if (warps != null) {
 			for (WarpTP w : warps.values()) {
 				if (w.getName().equals(warpName)) {
@@ -210,7 +210,7 @@ public class ConfigLoader {
 	}
 
 	/** @param path The path to the number configuration: Ex: "warps.1" */
-	public static void addWarp(String warpName) {
+	public void addWarp(String warpName) {
 		loadWarp(warpName);
 	}
 
@@ -326,5 +326,9 @@ public class ConfigLoader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public HashMap<String, WarpTP> getWarps() {
+		return warps;
 	}
 }
