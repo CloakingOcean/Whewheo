@@ -31,12 +31,12 @@ public class SendParticleGenerator extends ParticleGenerator {
 	private Main main;
 	private ServerSelectionHandler serverSel;
 
-	public SendParticleGenerator(Player player, int tickDelay, WarpTP warp, ConfigLoader configLoader, Main main, ServerSelectionHandler serverSel) {
+	public SendParticleGenerator(Player player, int tickDelay, WarpTP warp, Main main) {
 		super(player, tickDelay);
 
-		this.configLoader = configLoader;
+		this.configLoader = main.getConfigLoader();
 		this.main = main;
-		this.serverSel = serverSel;
+		this.serverSel = main.getServerSel();
 
 		this.warp = warp;
 
@@ -144,6 +144,6 @@ public class SendParticleGenerator extends ParticleGenerator {
 	public ReceiveParticleGenerator getGenerator(Player player, WarpTP warp) {
 		Bukkit.getServer().getLogger().severe("Starting Switch Statement");
 
-		return Main.getReceiveGeneratorFromEnum(warp.getReceive(), player);
+		return main.getReceiveGeneratorFromEnum(warp.getReceive(), player);
 	}
 }

@@ -51,12 +51,12 @@ public class ServerSelectionHandler implements Listener {
 	private HashMap<ItemStack, WarpTP> warpItems;
 	private List<String> teleportingPlayers;
 
-	private ConfigLoader configLoader;
 	private Main main;
+	private ConfigLoader configLoader;
 
-	public ServerSelectionHandler(HashMap<String, WarpTP> warps, ConfigLoader configLoader, Main main) {
-		this.configLoader = configLoader;
+	public ServerSelectionHandler(HashMap<String, WarpTP> warps, Main main) {
 		this.main = main;
+		this.configLoader = main.getConfigLoader();
 		init();
 	}
 
@@ -214,7 +214,7 @@ public class ServerSelectionHandler implements Listener {
 
 				Main.centeredTP(event.getPlayer(), loc);
 
-				ReceiveParticleGenerator g = Main
+				ReceiveParticleGenerator g = main
 						.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
 
 				g.runTaskTimer(Main.instance, 0, g.getTickDelay());
@@ -222,7 +222,7 @@ public class ServerSelectionHandler implements Listener {
 			} else {
 				String generatorName = message;
 
-				ReceiveParticleGenerator g = Main
+				ReceiveParticleGenerator g = main
 						.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
 
 				g.runTaskTimer(Main.instance, 0, g.getTickDelay());
@@ -344,7 +344,7 @@ public class ServerSelectionHandler implements Listener {
 
 						player.closeInventory();
 
-						ParticleGenerator generator = Main.getSendGeneratorFromEnum(warp.getSend(), player, warp);
+						ParticleGenerator generator = main.getSendGeneratorFromEnum(warp.getSend(), player, warp);
 
 						generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
 					}
@@ -456,5 +456,25 @@ public class ServerSelectionHandler implements Listener {
 
 	public boolean containsTeleportingPlayer(String uuid) {
 		return teleportingPlayers.contains(uuid);
+	}
+
+	public Inventory getWarpsInventory() {
+		return this.warps;
+	}
+
+	public HashMap<ItemStack, WarpTP> getWarpItems() {
+		return this.warpItems;
+	}
+
+	public void setWarpItem(int index, ItemStack item) {
+		warps.setItem(index, item);
+	}
+
+	public void addWarpItem(ItemStack item, WarpTP warp) {
+		warpItems.put(item, warp);
+	}
+
+	public boolean containsWarpItem(ItemStack item) {
+		return warpItems.containsKey(item);
 	}
 }

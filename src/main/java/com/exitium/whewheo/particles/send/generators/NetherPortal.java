@@ -25,15 +25,14 @@ public class NetherPortal extends SendParticleGenerator {
 	private int width = 2;
 	final private double space = .4;
 
-	private ConfigLoader configLoader;
 	private ServerSelectionHandler serverSel;
-	private Main main;
 
 	// Remember to go up from the players location because the player's location
 	// refers to the bottom of their feet.
 
-	public NetherPortal(Player player, WarpTP warp, ConfigLoader configLoader, Main main, ServerSelectionHandler serverSel) {
-		super(player, 1, warp, configLoader, main, serverSel);
+	public NetherPortal(Player player, WarpTP warp, Main main) {
+		super(player, 1, warp, main);
+		this.serverSel = main.getServerSel();
 	}
 
 	@Override

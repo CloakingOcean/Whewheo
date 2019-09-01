@@ -3,6 +3,7 @@ package com.exitium.whewheo;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.exitium.whewheo.commands.Commands;
 import com.exitium.whewheo.init.ConfigLoader;
@@ -24,9 +25,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
@@ -44,11 +45,8 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	// Public static instance of the Main class for easier access.
 	public static Main instance;
 
-	/*
-	 * Permissions
-	 */
-
 	private ConfigLoader configLoader;
+	private ServerSelectionHandler serverSel;
 
 	/** Runs on server startup. */
 	@Override
@@ -63,10 +61,10 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
 
 		// Register listeners for ServerSelectionHandler.
-		Bukkit.getPluginManager().registerEvents(new ServerSelectionHandler(this.configLoader.getWarps()), this);
+		Bukkit.getPluginManager().registerEvents(serverSel = new ServerSelectionHandler(this.configLoader.getWarps(), this), this);
 
 		// Sets command "/ww"'s executor to Commands.
-		getCommand("ww").setExecutor(new Commands(this.configLoader));
+		getCommand("ww").setExecutor(new Commands(this.configLoader, this.serverSel));
 
 		// Attempts to get the server name from the bungeecord proxy if a player is
 		// online.
@@ -139,12 +137,15 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 			serverName = servername;
 			int playerCount = Bukkit.getServer().getOnlinePlayers().size();
 
-			for (int i = 0; i < ServerSelectionHandler.warps.getContents().length; i++) {
-				ItemStack item = ServerSelectionHandler.warps.getItem(i);
-				if (item != null) {
-					if (ServerSelectionHandler.warpItems.containsKey(item) == true) {
+			Inventory warpInventory = this.serverSel.getWarpsInventory();
+			HashMap<ItemStack, WarpTP> warpItems = this.serverSel.getWarpItems();
 
-						WarpTP warp = ServerSelectionHandler.warpItems.get(item);
+			for (int i = 0; i < warpInventory.getContents().length; i++) {
+				ItemStack item = warpInventory.getItem(i);
+				if (item != null) {
+					if (warpItems.containsKey(item) == true) {
+
+						WarpTP warp = warpItems.get(item);
 
 						if (serverName.equals(warp.getServerName())) {
 
@@ -169,8 +170,8 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 								meta.setLore(lore);
 
 								item.setItemMeta(meta);
-								ServerSelectionHandler.warps.setItem(i, item);
-								ServerSelectionHandler.warpItems.put(item, warp);
+								this.serverSel.setWarpItem(i, item);
+								this.serverSel.addWarpItem(item, warp);
 							}
 						}
 					}
@@ -188,14 +189,17 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 				return;
 			}
 
-			for (int i = 0; i < ServerSelectionHandler.warps.getContents().length; i++) {
-				ItemStack item = ServerSelectionHandler.warps.getItem(i);
+			Inventory warpsInventory = this.serverSel.getWarpsInventory();
+			HashMap<ItemStack, WarpTP> warpItems = this.serverSel.getWarpItems();
+
+			for (int i = 0; i < warpsInventory.getContents().length; i++) {
+				ItemStack item = warpsInventory.getItem(i);
 				if (item == null)
 					continue;
-				if (ServerSelectionHandler.warpItems.containsKey(item) == false)
+				if (warpItems.containsKey(item) == false)
 					continue;
 
-				WarpTP warp = ServerSelectionHandler.warpItems.get(item);
+				WarpTP warp = warpItems.get(item);
 
 				if (serverName.equals(warp.getServerName())) {
 
@@ -221,29 +225,29 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 
 						item.setItemMeta(meta);
 
-						ServerSelectionHandler.warps.setItem(i, item);
-						ServerSelectionHandler.warpItems.put(item, warp);
+						this.serverSel.setWarpItem(i, item);
+						this.serverSel.addWarpItem(item, warp);
 					}
 				}
 			}
 		}
 	}
 
-	public static SendParticleGenerator getSendGeneratorFromEnum(ValidSendGenerators generator, Player player,
+	public SendParticleGenerator getSendGeneratorFromEnum(ValidSendGenerators generator, Player player,
 			WarpTP warp) {
 		switch (generator) {
 		case SPIRAL:
-			return new Spiral(player, warp);
+			return new Spiral(player, warp, this);
 		case NETHER_PORTAL:
-			return new NetherPortal(player, warp);
+			return new NetherPortal(player, warp, this);
 		default:
 			Bukkit.getServer().getLogger()
 					.severe("Couldn't determine matching ValidSendGenerators. Contact Developer!");
-			return new Spiral(player, warp);
+			return new Spiral(player, warp, this);
 		}
 	}
 
-	public static ReceiveParticleGenerator getReceiveGeneratorFromEnum(ValidReceiveGenerators generator,
+	public ReceiveParticleGenerator getReceiveGeneratorFromEnum(ValidReceiveGenerators generator,
 			Player player) {
 		switch (generator) {
 		case EMERALD:
@@ -258,6 +262,14 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	}
 
 	public String getServerName() {
-		return serverName;
+		return this.serverName;
+	}
+
+	public ConfigLoader getConfigLoader() {
+		return this.configLoader;
+	}
+
+	public ServerSelectionHandler getServerSel() {
+		return this.serverSel;
 	}
 }

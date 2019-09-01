@@ -1,7 +1,6 @@
 package com.exitium.whewheo.particles.send.generators;
 
 import com.exitium.whewheo.Main;
-import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.init.ServerSelectionHandler;
 import com.exitium.whewheo.particles.send.SendParticleGenerator;
 import com.exitium.whewheo.particles.util.ParticleEffect;
@@ -24,12 +23,11 @@ public class Spiral extends SendParticleGenerator {
 
 	private double radius = 1;
 
-	private ConfigLoader configLoader;
-	private Main main;
 	private ServerSelectionHandler serverSel;
 
-	public Spiral(Player player, WarpTP warp, ConfigLoader configLoader, Main main, ServerSelectionHandler serverSel) {
-		super(player, 1, warp, configLoader, main, serverSel);
+	public Spiral(Player player, WarpTP warp, Main main) {
+		super(player, 1, warp, main);
+		this.serverSel = main.getServerSel();
 
 		Bukkit.getServer().getLogger().info("A spiral is loading up");
 	}

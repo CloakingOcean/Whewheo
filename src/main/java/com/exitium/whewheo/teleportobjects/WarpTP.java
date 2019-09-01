@@ -37,8 +37,10 @@ public class WarpTP {
 	private ValidSendGenerators send;
 	private ValidReceiveGenerators receive;
 
-	public WarpTP() {
+	private ConfigLoader configLoader;
 
+	public WarpTP(ConfigLoader configLoader) {
+		this.configLoader = configLoader;
 	}
 
 	public boolean load(ConfigurationSection section, String key) {
@@ -56,7 +58,7 @@ public class WarpTP {
 		}
 
 		this.id = retrieveId(key);
-		this.name = ConfigLoader.getColoredTextFromMenu("warps." + key + ".name");
+		this.name = configLoader.getColoredTextFromMenu("warps." + key + ".name");
 		loadLocation(section, key);
 		this.material = section.getString("material");
 		this.enchantment = parseEnchantment(section);
@@ -195,7 +197,7 @@ public class WarpTP {
 
 	private ValidSendGenerators parseSendGenerator(ConfigurationSection section, String key) {
 		String sendGeneratorName = section.getString("sendEffect");
-		ValidSendGenerators validSendGenerator = null;
+
 		try {
 			return ValidSendGenerators.valueOf(sendGeneratorName.toUpperCase());
 		} catch (Exception e) {
@@ -207,10 +209,9 @@ public class WarpTP {
 
 	private ValidReceiveGenerators parseReceiveGenerator(ConfigurationSection section, String key) {
 		String receiveGeneratorName = section.getString("receiveEffect");
-		ValidReceiveGenerators validReceiveGenerator = null;
 
 		try {
-			return validReceiveGenerator = ValidReceiveGenerators.valueOf(receiveGeneratorName.toUpperCase());
+			return ValidReceiveGenerators.valueOf(receiveGeneratorName.toUpperCase());
 		} catch (Exception e) {
 			Bukkit.getLogger().severe("Couldn't load warp " + key +
 					". Invalid Receive Effect Specified. Please review \"generatorhelp.txt\" in plugin folder.");

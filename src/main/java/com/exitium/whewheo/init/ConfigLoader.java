@@ -195,7 +195,7 @@ public class ConfigLoader {
 		
 		ConfigurationSection section = menuConfig.getConfigurationSection("warps." + key);
 
-		WarpTP warp = new WarpTP();
+		WarpTP warp = new WarpTP(this);
 
 		if (warp.load(section, key)) {
 			warps.put(warp.getName(), warp);
