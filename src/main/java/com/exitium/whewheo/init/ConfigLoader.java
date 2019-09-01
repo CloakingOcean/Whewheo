@@ -84,7 +84,7 @@ public class ConfigLoader {
 	private void initiateConfigFiles() {
 		// Initiate and copy config file.
 		configFile = new File(main.getDataFolder(), "config.yml");
-		config = getConfig();
+		config = main.getConfig();
 
 		main.getConfig().options().copyDefaults(true);
 		main.saveConfig();
