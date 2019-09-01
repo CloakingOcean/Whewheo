@@ -306,14 +306,16 @@ public class ConfigLoader {
 	 * @return Specified Option with ChatColors
 	 */
 	public String getColoredTextFromMenu(String path) {
-		if (path != null) {
-			if (menuConfig.getString(path).contains("&")) {
-				return ChatColor.translateAlternateColorCodes('&', menuConfig.getString(path));
-			} else {
-				return menuConfig.getString(path);
-			}
+		if (path == null || path == "") {
+			Bukkit.getServer().getLogger().severe("getColoredTextFromMenu::Path is null or empty!");
+			return null;
 		}
-		return null;
+
+		if (menuConfig.getString(path).contains("&")) {
+			return ChatColor.translateAlternateColorCodes('&', menuConfig.getString(path));
+		} else {
+			return menuConfig.getString(path);
+		}
 	}
 
 	/**
