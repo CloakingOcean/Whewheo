@@ -71,6 +71,8 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 
 	public static String prefix = "";
 
+	private ConfigLoader configLoader;
+
 	/** Runs on server startup. */
 	@Override
 	public void onEnable() {
@@ -96,10 +98,10 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
 
 		// Instantiates a new Config Loader to store information from the config
-		new ConfigLoader();
+		this.configLoader = new ConfigLoader();
 
 		// Register listeners for ServerSelectionHandler.
-		Bukkit.getPluginManager().registerEvents(new ServerSelectionHandler(), this);
+		Bukkit.getPluginManager().registerEvents(new ServerSelectionHandler(this.configLoader.getWarps()), this);
 
 		// Sets command "/ww"'s executor to Commands.
 		getCommand("ww").setExecutor(new Commands());
@@ -380,4 +382,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		return sentPlayersConfig;
 	}
 
+	public ConfigLoader getConfigLoader() {
+		return this.configLoader;
+	}
 }
