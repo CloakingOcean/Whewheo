@@ -195,7 +195,7 @@ public class ConfigLoader {
 		
 		ConfigurationSection section = menuConfig.getConfigurationSection("warps." + key);
 
-		WarpTP warp = new WarpTP(this);
+		WarpTP warp = new WarpTP(main);
 
 		if (warp.load(section, key)) {
 			warps.put(warp.getName(), warp);
@@ -358,14 +358,14 @@ public class ConfigLoader {
 	 * Generates a TextFile in the Plugin's Directory to help users know the valid
 	 * generator names
 	 */
-	public static void writeParticleGeneratorHelpFile() {
+	public void writeParticleGeneratorHelpFile() {
 		try {
-			File dataFolder = Main.instance.getDataFolder();
+			File dataFolder = main.getDataFolder();
 			if (!dataFolder.exists()) {
 				dataFolder.mkdir();
 			}
 
-			File helpFile = new File(Main.instance.getDataFolder(), "generatorhelp.txt");
+			File helpFile = new File(main.getDataFolder(), "generatorhelp.txt");
 			if (!helpFile.exists()) {
 				helpFile.createNewFile();
 			}

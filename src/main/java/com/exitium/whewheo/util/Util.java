@@ -20,27 +20,7 @@ public final class Util {
 
     private Util() {}
 
-    /***
-     * Sends a plugin message through given player for the PlayerCount.
-     * 
-     * @param serverName
-     * @param player
-     */
-    public static void requestPlayerCount(String serverName, Player player) {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-
-        try {
-            out.writeUTF("PlayerCount");
-            out.writeUTF(serverName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
-
-    }
-
-    	/**
+    /**
 	 * Serializes a location into a string for easy storage in a config file.
 	 * 
 	 * @param l The location to serialize

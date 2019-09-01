@@ -75,11 +75,11 @@ public class SendParticleGenerator extends ParticleGenerator {
 			currentSecond = (int) secondsPassed;
 		} else {
 			if (warp.getServerName().equals(main.getServerName())) {
-				Main.centeredTP(player, warp.getLocation());
+				main.centeredTP(player, warp.getLocation());
 				player.closeInventory();
 
 				ParticleGenerator generator = getGenerator(player, warp);
-				generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
+				generator.runTaskTimer(main, 0, generator.getTickDelay());
 
 				serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 			} else {
@@ -96,7 +96,7 @@ public class SendParticleGenerator extends ParticleGenerator {
 
 		addPlayerInformation(player, generator);
 
-		Main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), warp.getServerName());
+		main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), warp.getServerName());
 	}
 
 	protected void sendPlayerToServer(Player player, Location loc, ValidReceiveGenerators generator) {
@@ -104,7 +104,7 @@ public class SendParticleGenerator extends ParticleGenerator {
 
 		addPlayerInformation(player, loc, generator);
 
-		Main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), warp.getServerName());
+		main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), warp.getServerName());
 	}
 
 	private void addPlayerInformation(Player player, Location loc, ValidReceiveGenerators generator) {

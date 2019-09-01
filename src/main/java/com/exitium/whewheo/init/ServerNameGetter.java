@@ -56,7 +56,7 @@ public class ServerNameGetter implements Runnable {
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		out.writeUTF("GetServer"); // Set channel to GetServer
 
-		player.sendPluginMessage(Main.instance, "BungeeCord", out.toByteArray());
+		player.sendPluginMessage(main, "BungeeCord", out.toByteArray());
 		Bukkit.getServer().getLogger().info("Sending request!");
 		Bukkit.getServer().getLogger().info("Cancelling Thread!");
 		Bukkit.getServer().getScheduler().cancelTask(threadId);

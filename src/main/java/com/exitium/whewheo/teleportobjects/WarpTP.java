@@ -3,10 +3,10 @@ package com.exitium.whewheo.teleportobjects;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.exitium.whewheo.Main;
 import com.exitium.whewheo.init.ConfigLoader;
 import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
 import com.exitium.whewheo.particles.send.ValidSendGenerators;
-import com.exitium.whewheo.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -37,10 +37,12 @@ public class WarpTP {
 	private ValidSendGenerators send;
 	private ValidReceiveGenerators receive;
 
+	private Main main;
 	private ConfigLoader configLoader;
 
-	public WarpTP(ConfigLoader configLoader) {
-		this.configLoader = configLoader;
+	public WarpTP(Main main) {
+		this.main = main;
+		this.configLoader = main.getConfigLoader();
 	}
 
 	public boolean load(ConfigurationSection section, String key) {
@@ -90,7 +92,7 @@ public class WarpTP {
 
 			if (s.contains("%count%")) {
 				if (!previouslyRequested.contains(this.serverName)) {
-					Util.requestPlayerCount(this.serverName, player);
+					main.requestPlayerCount(this.serverName, player);
 					previouslyRequested.add(this.serverName);
 				}
 			}

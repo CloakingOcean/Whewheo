@@ -212,12 +212,12 @@ public class ServerSelectionHandler implements Listener {
 
 				Location loc = new Location(targetWorld, x, y, z);
 
-				Main.centeredTP(event.getPlayer(), loc);
+				main.centeredTP(event.getPlayer(), loc);
 
 				ReceiveParticleGenerator g = main
 						.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
 
-				g.runTaskTimer(Main.instance, 0, g.getTickDelay());
+				g.runTaskTimer(main, 0, g.getTickDelay());
 
 			} else {
 				String generatorName = message;
@@ -225,7 +225,7 @@ public class ServerSelectionHandler implements Listener {
 				ReceiveParticleGenerator g = main
 						.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
 
-				g.runTaskTimer(Main.instance, 0, g.getTickDelay());
+				g.runTaskTimer(main, 0, g.getTickDelay());
 
 			}
 			fc.set(event.getPlayer().getUniqueId().toString(), null);
@@ -235,7 +235,7 @@ public class ServerSelectionHandler implements Listener {
 		if (main.getServerName() == null) {
 
 			ServerNameGetter sng = new ServerNameGetter(event.getPlayer(), main);
-			int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Main.instance, sng, (long) 40L,
+			int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(main, sng, (long) 40L,
 					(long) 1L);
 			sng.setThreadId(threadId);
 		}
@@ -346,7 +346,7 @@ public class ServerSelectionHandler implements Listener {
 
 						ParticleGenerator generator = main.getSendGeneratorFromEnum(warp.getSend(), player, warp);
 
-						generator.runTaskTimer(Main.instance, 0, generator.getTickDelay());
+						generator.runTaskTimer(main, 0, generator.getTickDelay());
 					}
 				} else {
 					Bukkit.getServer().getLogger().severe("WarpSelector was not properly initiated.");

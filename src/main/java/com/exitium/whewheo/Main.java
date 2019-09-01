@@ -42,9 +42,6 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	// Server name returned by Bungeecord's Proxy.
 	private String serverName;
 
-	// Public static instance of the Main class for easier access.
-	public static Main instance;
-
 	private ConfigLoader configLoader;
 	private ServerSelectionHandler serverSel;
 
@@ -73,7 +70,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("GetServer"); // Set channel to GetServer
 
-			Bukkit.getServer().getOnlinePlayers().iterator().next().sendPluginMessage(Main.instance, "BungeeCord",
+			Bukkit.getServer().getOnlinePlayers().iterator().next().sendPluginMessage(this, "BungeeCord",
 					out.toByteArray()); // Get an online player to send the Plugin Message through.
 		}
 	}
@@ -85,7 +82,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	}
 
 	/** Teleports a player to the center of a target location. */
-	public static void centeredTP(Player player, Location loc) {
+	public void centeredTP(Player player, Location loc) {
 
 		// By default, a teleport sends a player to the 0.0, 0.0 corner of a block, so
 		// we add half a block (0.5) on each side to center it.
@@ -103,7 +100,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	 * Attempts to send the player to the target server. Prints a stack trace if
 	 * unsuccessful.
 	 */
-	public static void sendToSever(Player player, String targetServer) {
+	public void sendToSever(Player player, String targetServer) {
 
 		// Prepare Output Stream
 		ByteArrayOutputStream b = new ByteArrayOutputStream();
@@ -119,7 +116,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		}
 
 		// Sends the targetPlayer the plugin message.
-		player.sendPluginMessage(instance, "BungeeCord", b.toByteArray());
+		player.sendPluginMessage(this, "BungeeCord", b.toByteArray());
 	}
 
 	/** Receives a message from Bungeecord and handles it appropriately */
@@ -232,6 +229,26 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 			}
 		}
 	}
+
+	/***
+     * Sends a plugin message through given player for the PlayerCount.
+     * 
+     * @param serverName
+     * @param player
+     */
+    public void requestPlayerCount(String serverName, Player player) {
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+
+        try {
+            out.writeUTF("PlayerCount");
+            out.writeUTF(serverName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        player.sendPluginMessage(this, "BungeeCord", out.toByteArray());
+
+    }
 
 	public SendParticleGenerator getSendGeneratorFromEnum(ValidSendGenerators generator, Player player,
 			WarpTP warp) {
