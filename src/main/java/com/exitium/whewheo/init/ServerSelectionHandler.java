@@ -10,6 +10,7 @@ import com.exitium.whewheo.particles.ParticleGenerator;
 import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
 import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
 import com.exitium.whewheo.teleportobjects.WarpTP;
+import com.exitium.whewheo.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -212,7 +213,7 @@ public class ServerSelectionHandler implements Listener {
 
 				Location loc = new Location(targetWorld, x, y, z);
 
-				main.centeredTP(event.getPlayer(), loc);
+				Util.centeredTP(event.getPlayer(), loc);
 
 				ReceiveParticleGenerator g = main
 						.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());

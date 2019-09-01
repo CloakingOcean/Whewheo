@@ -20,6 +20,21 @@ public final class Util {
 
     private Util() {}
 
+	/** Teleports a player to the center of a target location. */
+	public static void centeredTP(Player player, Location loc) {
+
+		// By default, a teleport sends a player to the 0.0, 0.0 corner of a block, so
+		// we add half a block (0.5) on each side to center it.
+		loc = new Location(loc.getWorld(), loc.getBlockX() + 0.5, loc.getY(), loc.getBlockZ() + 0.5);
+
+		// Maintains where the player is looking.
+		loc.setPitch(player.getLocation().getPitch());
+		loc.setYaw(player.getLocation().getYaw());
+
+		// Teleports the player
+		player.teleport(loc);
+	}
+
     /**
 	 * Serializes a location into a string for easy storage in a config file.
 	 * 

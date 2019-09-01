@@ -7,6 +7,7 @@ import com.exitium.whewheo.particles.ParticleGenerator;
 import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
 import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
 import com.exitium.whewheo.teleportobjects.WarpTP;
+import com.exitium.whewheo.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -75,7 +76,7 @@ public class SendParticleGenerator extends ParticleGenerator {
 			currentSecond = (int) secondsPassed;
 		} else {
 			if (warp.getServerName().equals(main.getServerName())) {
-				main.centeredTP(player, warp.getLocation());
+				Util.centeredTP(player, warp.getLocation());
 				player.closeInventory();
 
 				ParticleGenerator generator = getGenerator(player, warp);
