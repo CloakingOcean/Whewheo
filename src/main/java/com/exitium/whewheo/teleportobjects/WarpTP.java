@@ -60,7 +60,10 @@ public class WarpTP {
 		}
 
 		this.id = retrieveId(key);
-		this.name = configLoader.getColoredTextFromMenu("warps." + key + ".name");
+
+		Bukkit.getServer().getLogger().severe("configLoader == null: " + (this.configLoader == null));
+
+		this.name = this.configLoader.getColoredTextFromMenu("warps." + key + ".name");
 		loadLocation(section, key);
 		this.material = section.getString("material");
 		this.enchantment = parseEnchantment(section);
