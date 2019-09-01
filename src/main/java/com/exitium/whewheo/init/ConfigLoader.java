@@ -145,6 +145,31 @@ public class ConfigLoader {
 							location = new Location(world, x, y, z);
 						}
 
+					} else if (splitter.length == 4) {
+						// Send to location inside current server
+						String worldName = splitter[0];
+
+						int x, y, z;
+
+						try {
+							x = Integer.parseInt(splitter[1]);
+							y = Integer.parseInt(splitter[2]);
+							z = Integer.parseInt(splitter[3]);
+						} catch (NumberFormatException e) {
+							Bukkit.getServer().getLogger().severe("Couldn't load warp: " + key + ". Invalid location coordinates. Invalid Integers.");
+							return;
+						}
+
+						World world = Bukkit.getServer().getWorld(worldName);
+						if (world == null) {
+							Bukkit.getServer().getLogger()
+									.severe("Couldn't load warp: " + key + ". Couldn't find world : " + worldName
+											+ "! Please edit location configuration for warp " + key + "!");
+							return;
+						}
+
+						location = new Location(world, x, y, z);
+
 					} else if (splitter.length == 2) {
 						// Send to server at default spawn location of world
 						serverName = splitter[0];
