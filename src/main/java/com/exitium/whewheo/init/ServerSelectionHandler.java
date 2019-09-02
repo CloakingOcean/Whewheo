@@ -308,6 +308,7 @@ public class ServerSelectionHandler implements Listener {
 		Inventory inventory = event.getInventory();
 		if (!inventory.equals(warps)){
 			if (event.getCurrentItem().equals(warpSelector)) {
+				((Player) event.getWhoClicked()).openInventory(warps);
 				event.setCancelled(true);
 			}
 			return;
@@ -337,9 +338,10 @@ public class ServerSelectionHandler implements Listener {
 
 		WarpTP warp = warpItems.get(event.getCurrentItem());
 
-		if (warp.getCommands() == null || warp.getCommands().isEmpty()) {
-			return;
-		}
+		// TODO: Implement Commands Correctly Here
+		// if (warp.getCommands() == null || warp.getCommands().isEmpty()) {
+		// 	return;
+		// }
 
 		teleportingPlayers.add(player.getUniqueId().toString());
 

@@ -61,8 +61,11 @@ public class SendParticleGenerator extends ParticleGenerator {
 		if (warp.getLocation() == null) {
 			// Not specified. No need to teleport
 
+			Bukkit.getServer().getLogger().severe("warp location == null. Sending player to Server without location");
+			
 			sendPlayerToServer(player, warp.getReceive());
 		} else {
+			Bukkit.getServer().getLogger().severe("warp location is set to: " + Util.serializeLocation(warp.getLocation()));
 			sendPlayerToServer(player, warp.getLocation(), warp.getReceive());
 		}
 	}
