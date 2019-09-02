@@ -132,14 +132,14 @@ public class Commands implements CommandExecutor {
 											if (this.configLoader.warpHasRequirements("warps." + key)) { // Check to see if
 																									// it should be
 																									// enabled
-												this.configLoader.reload();
-
-												// Add it to current loaded warps
-												this.configLoader.addWarp(key);
+												this.configLoader.reloadMenuConfig();
 
 												// Set enabled to true in config
 												this.configLoader.getMenuConfig().set("warps." + key + ".enabled", true);
 												this.configLoader.saveMenuConfig();
+
+												// Add it to current loaded warps
+												this.configLoader.addWarp(key);
 													
 												this.serverSel.setupItems();
 												this.serverSel.setupInventories();

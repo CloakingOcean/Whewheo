@@ -182,6 +182,10 @@ public class ConfigLoader {
 		}
 	}
 
+	public void reloadMenuConfig() {
+		menuConfig = YamlConfiguration.loadConfiguration(menuFile);
+	}
+
 	/**
 	 * Gets the next available warp Id
 	 * 
