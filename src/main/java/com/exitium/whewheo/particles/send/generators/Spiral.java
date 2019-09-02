@@ -34,13 +34,17 @@ public class Spiral extends SendParticleGenerator {
 
 	@Override
 	public void run() {
+		Bukkit.getServer().getLogger().info("Spiral: run");
+
 		if (Bukkit.getServer().getPlayer(player.getUniqueId()) == null) {
+			Bukkit.getServer().getLogger().info("The player specified with this teleport has gone offline.");
 			serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 			cancel();
 			return;
 		}
 
 		if (!serverSel.containsTeleportingPlayer(player.getUniqueId().toString())) {
+			Bukkit.getServer().getLogger().info("This player is not in the teleporting group of serverSel!");
 			cancel();
 		}
 
