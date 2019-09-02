@@ -34,17 +34,14 @@ public class Spiral extends SendParticleGenerator {
 
 	@Override
 	public void run() {
-		Bukkit.getServer().getLogger().info("Spiral: run");
 
 		if (Bukkit.getServer().getPlayer(player.getUniqueId()) == null) {
-			Bukkit.getServer().getLogger().info("The player specified with this teleport has gone offline.");
 			serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 			cancel();
 			return;
 		}
 
 		if (!serverSel.containsTeleportingPlayer(player.getUniqueId().toString())) {
-			Bukkit.getServer().getLogger().info("This player is not in the teleporting group of serverSel!");
 			cancel();
 		}
 
@@ -101,6 +98,7 @@ public class Spiral extends SendParticleGenerator {
 				new Location(loc.getWorld(), loc.getX(), loc.getY() + 3, loc.getZ() + 0.1), 100);
 		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
 				new Location(loc.getWorld(), loc.getX(), loc.getY() + 3, loc.getZ() - 0.1), 100);
+
 		checkTeleporation();
 
 		secondsPassed += (1.0 / 20.0);
