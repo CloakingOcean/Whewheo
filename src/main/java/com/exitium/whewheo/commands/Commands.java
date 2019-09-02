@@ -140,6 +140,9 @@ public class Commands implements CommandExecutor {
 												this.configLoader.reload();
 												this.configLoader.getMenuConfig().set("warps." + key + ".enabled", true);
 												this.configLoader.saveMenuConfig();
+													
+												this.serverSel.setupItems();
+												this.serverSel.setupInventories();
 
 												sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("enabledWarp"));
 											}
