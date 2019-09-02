@@ -134,14 +134,14 @@ public class WarpTP {
 			
 			// Send to local warp
 
-			String worldName = splitter[index+1];
+			String worldName = splitter[index];
 
 			int x, y, z;
 
 			try {
-				x = Integer.parseInt(splitter[index+2]);
-				y = Integer.parseInt(splitter[index+3]);
-				z = Integer.parseInt(splitter[index+4]);
+				x = Integer.parseInt(splitter[index+1]);
+				y = Integer.parseInt(splitter[index+2]);
+				z = Integer.parseInt(splitter[index+3]);
 			} catch (NumberFormatException e) {
 				Bukkit.getServer().getLogger().severe(
 						"Couldn't load warp: " + key + ". Invalid location coordinates. Invalid Integers.");
