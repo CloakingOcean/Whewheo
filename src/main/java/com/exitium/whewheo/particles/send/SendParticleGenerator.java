@@ -10,8 +10,6 @@ import com.exitium.whewheo.teleportobjects.WarpTP;
 import com.exitium.whewheo.util.Util;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 /**
@@ -77,18 +75,8 @@ public class SendParticleGenerator extends ParticleGenerator {
 			}
 			currentSecond = (int) secondsPassed;
 		} else {
-			if (warp.getServerName().equals(main.getServerName())) {
-				Util.centeredTP(player, warp.getLocation());
-				player.closeInventory();
-
-				ParticleGenerator generator = getGenerator(player, warp);
-				generator.runTaskTimer(main, 0, generator.getTickDelay());
-
-				serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
-			} else {
-				serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
-				handleLocationDetails(player);
-			}
+			serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
+			handleLocationDetails(player);
 			cancel();
 
 		}

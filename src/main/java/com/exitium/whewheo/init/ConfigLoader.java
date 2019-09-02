@@ -204,7 +204,7 @@ public class ConfigLoader {
 
 		menuConfig.set("warps." + nextIndex + ".name", warpName);
 		menuConfig.set("warps." + nextIndex + ".location",
-				main.getServerName() + ":" + Util.serializeLocation(player.getLocation()));
+			Util.serializeLocation(player.getLocation()));
 		menuConfig.set("warps." + nextIndex + ".enabled", false);
 
 		// Create Place Holders

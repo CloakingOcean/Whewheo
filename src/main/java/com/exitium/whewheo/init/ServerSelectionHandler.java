@@ -235,14 +235,6 @@ public class ServerSelectionHandler implements Listener {
 		// 	this.configLoader.saveSentPlayersConfig();
 		// }
 
-		if (main.getServerName() == null) {
-
-			ServerNameGetter sng = new ServerNameGetter(event.getPlayer(), main);
-			int threadId = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(main, sng, (long) 40L,
-					(long) 1L);
-			sng.setThreadId(threadId);
-		}
-
 		if (warpSelector != null) {
 
 			if (this.configLoader.getConfig().contains("warpSelector")) {

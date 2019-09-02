@@ -2,8 +2,6 @@ package com.exitium.whewheo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import com.exitium.whewheo.commands.Commands;
 import com.exitium.whewheo.init.ConfigLoader;
@@ -17,19 +15,12 @@ import com.exitium.whewheo.particles.send.ValidSendGenerators;
 import com.exitium.whewheo.particles.send.generators.NetherPortal;
 import com.exitium.whewheo.particles.send.generators.Spiral;
 import com.exitium.whewheo.teleportobjects.WarpTP;
-import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
 
 /**
  * Main class for Whewheo. Extends JavaPlugin.
@@ -37,10 +28,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
  * @author Cloaking_Ocean date Mar 26, 2017
  * @version 1.0
  */
-public class Main extends JavaPlugin implements PluginMessageListener { 
-
-	// Server name returned by Bungeecord's Proxy.
-	private String serverName;
+public class Main extends JavaPlugin { 
 
 	private ConfigLoader configLoader;
 	private ServerSelectionHandler serverSel;
@@ -52,11 +40,6 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		// Instantiates a new Config Loader to store information from the config
 		this.configLoader = new ConfigLoader(this);
 		this.configLoader.init();
-
-		// Register Outgoing and Incoming Plugin Channel for BungeeCord to request the
-		// server name and player count.
-		Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-		Bukkit.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
 
 		// Register listeners for ServerSelectionHandler.
 		Bukkit.getPluginManager().registerEvents(serverSel = new ServerSelectionHandler(this.configLoader.getWarps(), this), this);
@@ -105,137 +88,6 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		player.sendPluginMessage(this, "BungeeCord", b.toByteArray());
 	}
 
-	/** Receives a message from Bungeecord and handles it appropriately */
-	@Override
-	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-		if (!channel.equals("BungeeCord")) {
-			return;
-		}
-
-		ByteArrayDataInput in = ByteStreams.newDataInput(message);
-		String subchannel = in.readUTF();
-		if (subchannel.equals("GetServer")) {
-			String servername = in.readUTF();
-
-			serverName = servername;
-			int playerCount = Bukkit.getServer().getOnlinePlayers().size();
-
-			Inventory warpInventory = this.serverSel.getWarpsInventory();
-			HashMap<ItemStack, WarpTP> warpItems = this.serverSel.getWarpItems();
-
-			for (int i = 0; i < warpInventory.getContents().length; i++) {
-				ItemStack item = warpInventory.getItem(i);
-				if (item != null) {
-					if (warpItems.containsKey(item) == true) {
-
-						WarpTP warp = warpItems.get(item);
-
-						if (serverName.equals(warp.getServerName())) {
-
-							// Add Player Number
-							ItemMeta meta = item.getItemMeta();
-
-							ArrayList<String> lore = new ArrayList<String>();
-
-							if (meta.hasLore()) {
-
-								for (String l : meta.getLore()) {
-									String toAdd = l;
-
-									if (toAdd.contains("&"))
-										toAdd = ChatColor.translateAlternateColorCodes('&', toAdd);
-									if (toAdd.contains("%count%"))
-										toAdd = toAdd.replace("%count%", playerCount + "");
-
-									lore.add(toAdd);
-								}
-
-								meta.setLore(lore);
-
-								item.setItemMeta(meta);
-								this.serverSel.setWarpItem(i, item);
-								this.serverSel.addWarpItem(item, warp);
-							}
-						}
-					}
-				}
-			}
-
-		} else if (subchannel.equals("PlayerCount")) {
-			int playerCount = 0;
-			String serverName;
-			try {
-				serverName = in.readUTF(); // Name of server, as given in the arguments
-			} catch (Exception e) {
-				Bukkit.getServer().getLogger().severe("Invalid Server Name!");
-				playerCount = 0;
-				return;
-			}
-
-			Inventory warpsInventory = this.serverSel.getWarpsInventory();
-			HashMap<ItemStack, WarpTP> warpItems = this.serverSel.getWarpItems();
-
-			for (int i = 0; i < warpsInventory.getContents().length; i++) {
-				ItemStack item = warpsInventory.getItem(i);
-				if (item == null)
-					continue;
-				if (warpItems.containsKey(item) == false)
-					continue;
-
-				WarpTP warp = warpItems.get(item);
-
-				if (serverName.equals(warp.getServerName())) {
-
-					// Add Player Number
-					ItemMeta meta = item.getItemMeta();
-
-					ArrayList<String> lore = new ArrayList<String>();
-
-					if (meta.hasLore()) {
-
-						for (String l : meta.getLore()) {
-							String toAdd = l;
-
-							if (toAdd.contains("&"))
-								toAdd = ChatColor.translateAlternateColorCodes('&', toAdd);
-							if (toAdd.contains("%count%"))
-								toAdd = toAdd.replace("%count%", playerCount + "");
-
-							lore.add(toAdd);
-						}
-
-						meta.setLore(lore);
-
-						item.setItemMeta(meta);
-
-						this.serverSel.setWarpItem(i, item);
-						this.serverSel.addWarpItem(item, warp);
-					}
-				}
-			}
-		}
-	}
-
-	/***
-     * Sends a plugin message through given player for the PlayerCount.
-     * 
-     * @param serverName
-     * @param player
-     */
-    public void requestPlayerCount(String serverName, Player player) {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-
-        try {
-            out.writeUTF("PlayerCount");
-            out.writeUTF(serverName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        player.sendPluginMessage(this, "BungeeCord", out.toByteArray());
-
-    }
-
 	public SendParticleGenerator getSendGeneratorFromEnum(ValidSendGenerators generator, Player player,
 			WarpTP warp) {
 		switch (generator) {
@@ -262,10 +114,6 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 					.severe("Couldn't determine matching ValidReceiveGenerators. Contact Developer!");
 			return new Emerald(player);
 		}
-	}
-
-	public String getServerName() {
-		return this.serverName;
 	}
 
 	public ConfigLoader getConfigLoader() {

@@ -1,6 +1,5 @@
 package com.exitium.whewheo.teleportobjects;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.exitium.whewheo.Main;
@@ -83,26 +82,6 @@ public class WarpTP {
 		}
 
 		return true;
-	}
-
-	public void updatePlaceholders(Player player) {
-		ArrayList<String> previouslyRequested = new ArrayList<String>();
-		ArrayList<String> lore = new ArrayList<String>();
-
-		for (String s : this.lore) {
-			// s = s.replace("%player%", player.getName());
-
-			if (s.contains("%count%")) {
-				if (!previouslyRequested.contains(this.serverName)) {
-					main.requestPlayerCount(this.serverName, player);
-					previouslyRequested.add(this.serverName);
-				}
-			}
-
-			lore.add(s);
-		}
-
-		this.lore = lore;
 	}
 
 	private void loadLocation(ConfigurationSection section, String key) {
