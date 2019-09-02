@@ -181,57 +181,59 @@ public class ServerSelectionHandler implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 
-		receivedPlayersIf: if (this.configLoader.getSentPlayersConfig().contains(event.getPlayer().getUniqueId().toString())) {
-			// Sent from a Server with this plugin
-			Bukkit.getServer().getLogger().info("A ReceivedPlayer joined. Removing him from the list");
 
-			FileConfiguration fc = this.configLoader.getSentPlayersConfig();
-			String message = fc.getString(event.getPlayer().getUniqueId().toString());
+		// TODO: Remove current implementation and create a better system
+		// receivedPlayersIf: if (this.configLoader.getSentPlayersConfig().contains(event.getPlayer().getUniqueId().toString())) {
+		// 	// Sent from a Server with this plugin
+		// 	Bukkit.getServer().getLogger().info("A ReceivedPlayer joined. Removing him from the list");
 
-			if (message.contains(":")) {
+		// 	FileConfiguration fc = this.configLoader.getSentPlayersConfig();
+		// 	String message = fc.getString(event.getPlayer().getUniqueId().toString());
 
-				String[] splitter = message.split(":");
+		// 	if (message.contains(":")) {
 
-				int x = 0, y = 0, z = 0;
+		// 		String[] splitter = message.split(":");
 
-				String worldName = splitter[0];
-				try {
-					x = Integer.parseInt(splitter[1]);
-					y = Integer.parseInt(splitter[2]);
-					z = Integer.parseInt(splitter[3]);
-				} catch (NumberFormatException e) {
-					Bukkit.getServer().getLogger()
-							.severe("Invalid information saved in sentplayers.yml. Contact Developer");
-				}
+		// 		int x = 0, y = 0, z = 0;
 
-				String generatorName = splitter[4];
+		// 		String worldName = splitter[0];
+		// 		try {
+		// 			x = Integer.parseInt(splitter[1]);
+		// 			y = Integer.parseInt(splitter[2]);
+		// 			z = Integer.parseInt(splitter[3]);
+		// 		} catch (NumberFormatException e) {
+		// 			Bukkit.getServer().getLogger()
+		// 					.severe("Invalid information saved in sentplayers.yml. Contact Developer");
+		// 		}
 
-				World targetWorld = Bukkit.getWorld(worldName);
-				if (targetWorld == null) {
-					break receivedPlayersIf;
-				}
+		// 		String generatorName = splitter[4];
 
-				Location loc = new Location(targetWorld, x, y, z);
+		// 		World targetWorld = Bukkit.getWorld(worldName);
+		// 		if (targetWorld == null) {
+		// 			break receivedPlayersIf;
+		// 		}
 
-				Util.centeredTP(event.getPlayer(), loc);
+		// 		Location loc = new Location(targetWorld, x, y, z);
 
-				ReceiveParticleGenerator g = main
-						.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
+		// 		Util.centeredTP(event.getPlayer(), loc);
 
-				g.runTaskTimer(main, 0, g.getTickDelay());
+		// 		ReceiveParticleGenerator g = main
+		// 				.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
 
-			} else {
-				String generatorName = message;
+		// 		g.runTaskTimer(main, 0, g.getTickDelay());
 
-				ReceiveParticleGenerator g = main
-						.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
+		// 	} else {
+		// 		String generatorName = message;
 
-				g.runTaskTimer(main, 0, g.getTickDelay());
+		// 		ReceiveParticleGenerator g = main
+		// 				.getReceiveGeneratorFromEnum(ValidReceiveGenerators.valueOf(generatorName), event.getPlayer());
 
-			}
-			fc.set(event.getPlayer().getUniqueId().toString(), null);
-			this.configLoader.saveSentPlayersConfig();
-		}
+		// 		g.runTaskTimer(main, 0, g.getTickDelay());
+
+		// 	}
+		// 	fc.set(event.getPlayer().getUniqueId().toString(), null);
+		// 	this.configLoader.saveSentPlayersConfig();
+		// }
 
 		if (main.getServerName() == null) {
 

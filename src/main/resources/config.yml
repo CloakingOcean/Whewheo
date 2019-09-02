@@ -15,7 +15,6 @@ warpMenu:
 general:
   teleportDelay: 3
   prefix: '&b[&9Whewheo&b]&7'
-  bungeecordFolder: 'C:\Users\Shawn Whitaker\Documents\SpigotPlugins\1.11 Testing Server\BungeeCord'
 messages:
   reloadedConfig: "Successfully reloaded config"
   createdWarp: "You have successfully added a new warp. Please update the slot and other related information in the menu.yml"

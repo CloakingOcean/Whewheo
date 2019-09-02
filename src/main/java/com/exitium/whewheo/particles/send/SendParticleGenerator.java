@@ -61,13 +61,11 @@ public class SendParticleGenerator extends ParticleGenerator {
 		if (warp.getLocation() == null) {
 			// Not specified. No need to teleport
 
-			Bukkit.getServer().getLogger().severe("warp location == null. Sending player to Server without location");
-			
-			sendPlayerToServer(player, warp.getReceive());
-		} else {
-			Bukkit.getServer().getLogger().severe("warp location is set to: " + Util.serializeLocation(warp.getLocation()));
-			sendPlayerToServer(player, warp.getLocation(), warp.getReceive());
+			Bukkit.getServer().getLogger().severe("Warp " + warp.getName() + " does not have a valid Location! Please verify configuration!");
+			return;
 		}
+		Bukkit.getServer().getLogger().severe("warp location is set to: " + Util.serializeLocation(warp.getLocation()));
+		teleportPlayer(player, warp.getReceive());
 	}
 
 	protected void checkTeleporation() {
@@ -96,41 +94,10 @@ public class SendParticleGenerator extends ParticleGenerator {
 		}
 	}
 
-	protected void sendPlayerToServer(Player player, ValidReceiveGenerators generator) {
+	protected void teleportPlayer(Player player, ValidReceiveGenerators generator) {
 		serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 
-		addPlayerInformation(player, generator);
-
-		main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), warp.getServerName());
-	}
-
-	protected void sendPlayerToServer(Player player, Location loc, ValidReceiveGenerators generator) {
-		serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
-
-		addPlayerInformation(player, loc, generator);
-
-		main.sendToSever(Bukkit.getPlayer(player.getUniqueId()), warp.getServerName());
-	}
-
-	private void addPlayerInformation(Player player, Location loc, ValidReceiveGenerators generator) {
-		if (this.configLoader.getSentPlayersConfig().contains(player.getUniqueId().toString())) {
-			Bukkit.getServer().getLogger().severe("Left over information inside the sentplayers.yml!");
-		}
-
-		FileConfiguration fc = this.configLoader.getSentPlayersConfig();
-		fc.set(player.getUniqueId().toString(), loc.getWorld().getName() + ":" + loc.getBlockX() + ":" + loc.getBlockY()
-				+ ":" + loc.getBlockZ() + ":" + generator.name());
-		this.configLoader.saveSentPlayersConfig();
-	}
-
-	private void addPlayerInformation(Player player, ValidReceiveGenerators generator) {
-		if (this.configLoader.getSentPlayersConfig().contains(player.getUniqueId().toString())) {
-			Bukkit.getServer().getLogger().severe("Left over information inside the sentplayers.yml!");
-		}
-
-		FileConfiguration fc = this.configLoader.getSentPlayersConfig();
-		fc.set(player.getUniqueId().toString(), generator.name());
-		this.configLoader.saveSentPlayersConfig();
+		warp.receivePlayer(player, generator);
 	}
 
 	@Override

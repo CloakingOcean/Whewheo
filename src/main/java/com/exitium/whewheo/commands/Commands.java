@@ -59,11 +59,6 @@ public class Commands implements CommandExecutor {
 					serverSel.init();
 					sender.sendMessage(this.configLoader.getPrefix() + this.configLoader.msg("reloadedConfig"));
 					return true;
-				} else if (args[0].equalsIgnoreCase("test")) {
-					sender.sendMessage("Sending received Players.");
-					for (String playerUUID : this.configLoader.getSentPlayersConfig().getKeys(false)) {
-						sender.sendMessage("Player: " + playerUUID);
-					}
 				}
 
 			} else if (args.length == 2) {

@@ -5,8 +5,10 @@ import java.util.List;
 
 import com.exitium.whewheo.Main;
 import com.exitium.whewheo.init.ConfigLoader;
+import com.exitium.whewheo.particles.receive.ReceiveParticleGenerator;
 import com.exitium.whewheo.particles.receive.ValidReceiveGenerators;
 import com.exitium.whewheo.particles.send.ValidSendGenerators;
+import com.exitium.whewheo.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -219,6 +221,21 @@ public class WarpTP {
 					". Invalid Receive Effect Specified. Please review \"generatorhelp.txt\" in plugin folder.");
 			return null;
 		}
+	}
+
+	public void receivePlayer(Player player, ValidReceiveGenerators receive) {
+		if (this.location == null) {
+			Bukkit.getServer().getLogger().severe("Warp " + this.name + " missing location attribute! Please verify configuration!");
+			player.sendMessage("The warp you've attempted to teleport to does not have a valid location!");
+			return;
+		}
+
+		Util.centeredTP(player, this.location);
+
+		Bukkit.getServer().getLogger().info("Player " + player.getName() + " has been teleported to warp " + this.name);
+
+		ReceiveParticleGenerator g = main.getReceiveGeneratorFromEnum(receive, player);
+		g.runTaskTimer(main, 0, g.getTickDelay());
 	}
 
 	/**

@@ -39,9 +39,6 @@ public class ConfigLoader {
 	private FileConfiguration menuConfig;
 	private  File menuFile;
 
-	private FileConfiguration sentPlayersConfig;
-	private File sentPlayersFile;
-
 	// Enabled And Loaded Warps
 	private HashMap<String, WarpTP> warps;
 	private String prefix = ChatColor.AQUA + "[" + ChatColor.BLUE + "Whewheo" + ChatColor.AQUA + "]" + ChatColor.WHITE;
@@ -100,12 +97,6 @@ public class ConfigLoader {
 
 		menuConfig.options().copyDefaults(true);
 		saveMenuConfig();
-
-		Bukkit.getServer().getLogger().info("BungeeCord Folder: " + (config.getString("general.bungeecordFolder")));
-		sentPlayersFile = new File(config.getString("general.bungeecordFolder"), "sentplayers.yml");
-		Bukkit.getServer().getLogger().info("Sent Players File Path: " + sentPlayersFile.getPath());
-
-		sentPlayersConfig = YamlConfiguration.loadConfiguration(sentPlayersFile);
 	}
 
 	/** Attempts to save the config. If unsuccessful, it prints an error message. */
@@ -125,19 +116,6 @@ public class ConfigLoader {
 	public void saveMenuConfig() {
 		try {
 			menuConfig.save(menuFile);
-		} catch (IOException e) {
-			Bukkit.getServer().getLogger().severe(ChatColor.RED + "Error trying to save xp config. Contact Developer.");
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Attempts to save the sent players configuration to the menu file. If
-	 * unsuccessful, it prints an error message.
-	 */
-	public void saveSentPlayersConfig() {
-		try {
-			sentPlayersConfig.save(sentPlayersFile);
 		} catch (IOException e) {
 			Bukkit.getServer().getLogger().severe(ChatColor.RED + "Error trying to save xp config. Contact Developer.");
 			e.printStackTrace();
@@ -427,10 +405,6 @@ public class ConfigLoader {
 
 	public FileConfiguration getMenuConfig() {
 		return this.menuConfig;
-	}
-
-	public FileConfiguration getSentPlayersConfig() {
-		return this.sentPlayersConfig;
 	}
 
 	public HashMap<String, WarpTP> getWarps() {
