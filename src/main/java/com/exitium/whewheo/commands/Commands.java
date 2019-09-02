@@ -137,6 +137,7 @@ public class Commands implements CommandExecutor {
 												this.configLoader.addWarp(key);
 
 												// Set enabled to true in config
+												this.configLoader.reload();
 												this.configLoader.getMenuConfig().set("warps." + key + ".enabled", true);
 												this.configLoader.saveMenuConfig();
 
