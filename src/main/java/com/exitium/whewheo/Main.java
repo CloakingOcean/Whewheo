@@ -50,8 +50,9 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	public void onEnable() {
 
 		// Instantiates a new Config Loader to store information from the config
-		Bukkit.getServer().getLogger().severe("Assigning Config Loader now!");
+		Bukkit.getServer().getLogger().severe("Assigning Config Loader Now...");
 		this.configLoader = new ConfigLoader(this);
+		Bukkit.getServer().getLogger().severe("Assigned configLoader to new ConfigLoader!");
 
 		// Register Outgoing and Incoming Plugin Channel for BungeeCord to request the
 		// server name and player count.
