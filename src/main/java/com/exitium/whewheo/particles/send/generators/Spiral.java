@@ -34,71 +34,71 @@ public class Spiral extends SendParticleGenerator {
 
 	@Override
 	public void run() {
-		if (Bukkit.getServer().getPlayer(player.getUniqueId()) != null) {
-			if (serverSel.containsTeleportingPlayer(player.getUniqueId().toString())) {
-
-				Location loc = player.getLocation();
-
-				timeInRadians = timeInRadians + Math.PI / 8;
-
-				for (int i = 0; i < 10; i++) {
-					double x = (radius - (.09) * i) * Math.cos(timeInRadians + (Math.PI / 8) / 2 * i);
-					double y = i * (Math.PI / 8) / 1.50;
-					double z = (radius - (.09) * i) * Math.sin(timeInRadians + (Math.PI / 8) / 2 * i);
-					loc.add(x, y, z);
-
-					ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1, loc, 100);
-
-					loc.subtract(x, y, z);
-				}
-
-				double distance = 0.2;
-
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX(), loc.getY() + 2.7, loc.getZ()), 100);
-
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX() + distance, loc.getY() + 2.7, loc.getZ()), 100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX() - distance, loc.getY() + 2.7, loc.getZ()), 100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX(), loc.getY() + 2.7, loc.getZ() + distance), 100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX(), loc.getY() + 2.7, loc.getZ() - distance), 100);
-
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX() + distance, loc.getY() + 2.7, loc.getZ() + distance),
-						100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX() + distance, loc.getY() + 2.7, loc.getZ() - distance),
-						100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX() - distance, loc.getY() + 2.7, loc.getZ() + distance),
-						100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX() - distance, loc.getY() + 2.7, loc.getZ() - distance),
-						100);
-
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX(), loc.getY() + 3, loc.getZ()), 100);
-
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX() + 0.1, loc.getY() + 3, loc.getZ()), 100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX() - 0.1, loc.getY() + 3, loc.getZ()), 100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX(), loc.getY() + 3, loc.getZ() + 0.1), 100);
-				ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
-						new Location(loc.getWorld(), loc.getX(), loc.getY() + 3, loc.getZ() - 0.1), 100);
-				checkTeleporation();
-			} else {
-				cancel();
-			}
-
-			secondsPassed += (1.0 / 20.0);
-		} else {
+		if (Bukkit.getServer().getPlayer(player.getUniqueId()) == null) {
 			serverSel.removeTeleportingPlayer(player.getUniqueId().toString());
 			cancel();
+			return;
 		}
+
+		if (!serverSel.containsTeleportingPlayer(player.getUniqueId().toString())) {
+			cancel();
+		}
+
+		Location loc = player.getLocation();
+
+		timeInRadians = timeInRadians + Math.PI / 8;
+
+		for (int i = 0; i < 10; i++) {
+			double x = (radius - (.09) * i) * Math.cos(timeInRadians + (Math.PI / 8) / 2 * i);
+			double y = i * (Math.PI / 8) / 1.50;
+			double z = (radius - (.09) * i) * Math.sin(timeInRadians + (Math.PI / 8) / 2 * i);
+			loc.add(x, y, z);
+
+			ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1, loc, 100);
+
+			loc.subtract(x, y, z);
+		}
+
+		double distance = 0.2;
+
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX(), loc.getY() + 2.7, loc.getZ()), 100);
+
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX() + distance, loc.getY() + 2.7, loc.getZ()), 100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX() - distance, loc.getY() + 2.7, loc.getZ()), 100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX(), loc.getY() + 2.7, loc.getZ() + distance), 100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX(), loc.getY() + 2.7, loc.getZ() - distance), 100);
+
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX() + distance, loc.getY() + 2.7, loc.getZ() + distance),
+				100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX() + distance, loc.getY() + 2.7, loc.getZ() - distance),
+				100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX() - distance, loc.getY() + 2.7, loc.getZ() + distance),
+				100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX() - distance, loc.getY() + 2.7, loc.getZ() - distance),
+				100);
+
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX(), loc.getY() + 3, loc.getZ()), 100);
+
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX() + 0.1, loc.getY() + 3, loc.getZ()), 100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX() - 0.1, loc.getY() + 3, loc.getZ()), 100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX(), loc.getY() + 3, loc.getZ() + 0.1), 100);
+		ParticleEffect.CLOUD.display(new Vector(0, 0, 0), 1,
+				new Location(loc.getWorld(), loc.getX(), loc.getY() + 3, loc.getZ() - 0.1), 100);
+		checkTeleporation();
+
+		secondsPassed += (1.0 / 20.0);
 	}
 }

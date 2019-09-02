@@ -306,58 +306,48 @@ public class ServerSelectionHandler implements Listener {
 	public void onPlayerInventoryInteract(InventoryClickEvent event) {
 
 		Inventory inventory = event.getInventory();
-		if (inventory.equals(warps)) {
-			Player player = (Player) event.getWhoClicked();
-
-			event.setCancelled(true);
-			if (event.getCurrentItem() != null) {
-				if (warpSelector != null) {
-
-					if (event.getCurrentItem().equals(warpSelector)) {
-						((Player) event.getWhoClicked()).openInventory(warps);
-					} else if (warpItems.containsKey(event.getCurrentItem())) {
-
-						WarpTP warp = warpItems.get(event.getCurrentItem());
-
-						if (warp.getCommands() != null) {
-							if (warp.getCommands().isEmpty() == false) {
-								for (String command : warp.getCommands()) {
-									if (command.contains("%player%")) {
-										command = command.replace("%player%", player.getName());
-									}
-
-									if (command.startsWith("p:")) {
-										command = command.substring(2);
-										Bukkit.getServer().dispatchCommand(player, command);
-									} else if (command.startsWith("s:")) {
-										command = command.substring(2);
-										Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(),
-												command);
-									} else {
-										Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(),
-												command);
-									}
-								}
-							}
-						}
-
-						teleportingPlayers.add(player.getUniqueId().toString());
-
-						player.closeInventory();
-
-						ParticleGenerator generator = main.getSendGeneratorFromEnum(warp.getSend(), player, warp);
-
-						generator.runTaskTimer(main, 0, generator.getTickDelay());
-					}
-				} else {
-					Bukkit.getServer().getLogger().severe("WarpSelector was not properly initiated.");
-				}
-			}
-		} else {
+		if (!inventory.equals(warps)){
 			if (event.getCurrentItem().equals(warpSelector)) {
 				event.setCancelled(true);
 			}
+			return;
 		}
+
+		//Click was in the warp inventory
+		event.setCancelled(true);
+
+		Player player = (Player) event.getWhoClicked();
+
+		if (event.getCurrentItem() == null) {
+			return;
+		}
+
+		if (warpSelector == null) {
+			Bukkit.getServer().getLogger().severe("WarpSelector was not properly initiated.");
+		}
+
+		if (event.getCurrentItem().equals(warpSelector)) {
+			((Player) event.getWhoClicked()).openInventory(warps);
+			return;
+		}
+
+		if (!warpItems.containsKey(event.getCurrentItem())) {
+			return;
+		}
+
+		WarpTP warp = warpItems.get(event.getCurrentItem());
+
+		if (warp.getCommands() == null || warp.getCommands().isEmpty()) {
+			return;
+		}
+
+		teleportingPlayers.add(player.getUniqueId().toString());
+
+		player.closeInventory();
+
+		ParticleGenerator generator = main.getSendGeneratorFromEnum(warp.getSend(), player, warp);
+
+		generator.runTaskTimer(main, 0, generator.getTickDelay());
 	}
 
 	/**

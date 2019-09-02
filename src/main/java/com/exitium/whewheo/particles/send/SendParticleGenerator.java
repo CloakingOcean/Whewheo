@@ -57,6 +57,7 @@ public class SendParticleGenerator extends ParticleGenerator {
 	}
 
 	protected void handleLocationDetails(Player player) {
+		Bukkit.getServer().getLogger().severe("HandlingLocationDetails!");
 		if (warp.getLocation() == null) {
 			// Not specified. No need to teleport
 
