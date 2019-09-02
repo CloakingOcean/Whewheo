@@ -50,7 +50,6 @@ public class ConfigLoader {
 
 	public ConfigLoader(Main main) {
 		this.main = main;
-		init();
 	}
 
 	/** Initializes all of the components of the Config Loader class */
